@@ -1,112 +1,110 @@
-# Meme-Sharing Platform with CLI and Web Frontend
+# Cloud-Based File Storage Service with CLI and Web Frontend
 
 ## Project Purpose
 
-This project is a hands-on exploration and integration of modern software development technologies, focused on building a feature-rich meme-sharing application. The primary goal is to create a seamless system that connects a **command-line interface (CLI)** with a **web frontend** while leveraging **AWS cloud services** for backend functionality. This multi-faceted approach aims to deepen expertise in cutting-edge development practices, cloud architecture, and real-world project implementation.
+This project demonstrates a hands-on approach to designing and implementing a **cloud-based file storage service**. The primary aim is to build a reliable, scalable, and user-friendly platform connecting a **command-line interface (CLI)** with a **web frontend**, powered by **AWS services** for backend support. The project integrates **Java Spring Boot** for the backend and **React** for the web frontend, offering advanced file management capabilities with secure authentication, cloud storage, and high availability.
 
 ### Objectives
 
-1. **Technology Integration**
-    - Develop a cohesive platform that combines a **command-line interface (CLI)** for power users, a dynamic and responsive **web frontend**, and a robust AWS-powered backend for efficient data handling and advanced services.
-    - Enable **real-time synchronization** between the CLI and the web interface, ensuring smooth data consistency and a seamless user experience.
+1. **Comprehensive Platform Development**
+   - Build a cohesive system combining a **CLI tool** for power users and a responsive **web frontend** using the latest web development practices.
+   - Ensure **real-time synchronization** between the CLI and web interface for consistency and ease of use.
 
-2. **Containerization with Docker**
-    - Leverage **Docker** to containerize the entire application stack, simplifying development, deployment, and scalability across different environments.
+2. **Cloud-Powered Features**
+   - Integrate **AWS Cognito** for scalable and secure user authentication.
+   - Use **AWS S3** for storing and retrieving files securely.
+   - Optimize performance with **Memcached** for caching and **AWS EC2** for backend hosting.
+   - Implement CI/CD workflows for automated testing, building, and deployment.
 
-3. **Comprehensive Cloud Deployment with AWS**
-    - Utilize **AWS services** such as **Cognito for authentication**, **RDS for the database**, **S3 for media storage**, and **EC2 for hosting** to implement a scalable and secure cloud-based architecture.
-    - Incorporate advanced image scanning services for detecting inappropriate content to maintain a clean and safe platform.
+3. **Containerization and Scalability**
+   - Leverage **Docker** to containerize the platform, ensuring easy deployment and portability across environments.
+   - Design for scalability, allowing seamless horizontal and vertical scaling using AWS services.
 
-4. **Comprehensive Documentation**
-    - Deliver detailed developer and user documentation, including setup and deployment guides, CLI and web usage instructions, and development process descriptions, to ensure maintainability and usability of the system.
+4. **Robust Documentation**
+   - Provide detailed developer and user guides, setup instructions, and deployment documentation to simplify future maintenance and user onboarding.
 
-Through this project, the aim is to build not only a functional and scalable meme-sharing platform but also to gain hands-on experience with modern tools, containerization, cloud services, and best practices in software development.
+By creating this service, the project aims to deliver real-world hands-on experience with modern technologies like AWS, Docker, Java Spring Boot, and React, while emphasizing best practices in cloud architecture and scalable software development.
 
 ---
 
 ## Key Features
 
-### Meme Sharing Platform
-A community-driven meme-sharing platform, featuring seamless interaction through both the **CLI** and the **web interface** for effortless user engagement.
+### Cloud-Based File Storage Service
+A file storage platform designed for handling a large volume of data with user-friendly interfaces for **uploading, organizing, retrieving, and managing files**.
 
-### **Live Updates**
-- **Real-Time Sync:** Updates made through the **command line interface (CLI)** are reflected instantly on the web interface. This ensures **data consistency** across platforms and delivers a smooth user experience in real time.
-
-### **Comprehensive Functionality**
-- **Full CRUD Operations:** Users can easily **Create, Read, Update, and Delete (CRUD)** memes, manage tasks, and interact with the platform.
-- **Tagging and Categorization:** Organize memes with **tags** or categories, enabling efficient browsing and searching.
-- **Image Scanning:** Media uploaded through the platform is scanned using **AWS tools** to detect inappropriate content such as nudity or offensive material.
+### **Secure and Consistent**
+- **AWS-Powered Authentication**: Secure and reliable user authentication using **AWS Cognito** with robust authorization and token-based security.
+- **Real-Time Synchronization**: File modifications or uploads made via the **CLI** will instantly reflect on the **web interface**, ensuring consistency across platforms.
 
 ### **Cross-Platform Accessibility**
-- **Command-Line Interface:** An intuitive and feature-rich **CLI tool** allowing power users to upload, organize, and manage memes efficiently.
-- **Web Interface:** A dynamic and responsive **web application interface** for easily browsing, uploading, and interacting with memes from any browser.
+- **Command-Line Interface**: A powerful **CLI** for users who prefer fast and programmatic file management workflows directly from the terminal.
+- **Web Frontend**: A modern, responsive web interface (built with **React**) offering seamless interactions for browsing, uploading, and downloading files.
 
-### **Cloud-Powered Technology**
-- **AWS Authentication:** Secure and scalable user authentication powered by **Amazon Cognito**, supporting sign-up, sign-in, and advanced user management features.
-- **AWS Storage, Database & Deployment:**
-    - **S3** for secure and scalable media storage.
-    - **RDS** for reliable database functionality.
-    - **EC2** for cloud-based infrastructure hosting.
-- **Real-Time Sync and Moderation:** AWS services like content detection scan images to maintain safety and cleanliness.
-
-### **Safe & Clean Platform**
-- **Content Moderation:** Integration with AWS tools ensures uploaded images are checked for inappropriate content to keep the platform safe and community-friendly.
+### **Core Functionality**
+- **File Operations**: Users can easily **upload, download, update, and delete files** via the CLI or web frontend.
+- **Organizational Tools**: Features such as **tagging** and folders to efficiently organize and manage stored files.
+- **Caching for Speed**: **Memcached** ensures optimized file access performance, reducing latency for frequently accessed files.
 
 ---
 
-## Cloud Services Utilized
+## Cloud Services Overview
 
-This project heavily relies on AWS services to ensure scalability, performance, and security:
+The service architecture is powered by AWS to achieve scalability, performance, and security:
 
 1. **Amazon Cognito**:
-    - For secure user authentication across CLI and web platforms.
+   - Handles user authentication, including user sign-up, sign-in, and secure access tokens.
 2. **Amazon S3**:
-    - For storing and serving media assets (e.g., memes uploaded by users).
-3. **Amazon RDS**:
-    - Serves as the backend database to manage user data, meme metadata, and other application-related information.
+   - Provides durable and highly available storage for uploaded files.
+3. **Memcached**:
+   - Enhances read performance by caching critical data, minimizing latency and resource usage.
 4. **Amazon EC2**:
-    - Hosts the backend APIs and services with autoscaling capabilities.
-5. **Content Moderation**:
-    - AWS image scanning services ensure inappropriate content (e.g., nudity, offensive material) is flagged and moderated.
-6. **AWS CodePipeline/CodeBuild**:
-    - Enables CI/CD for a seamless build, test, and deployment process.
+   - Hosts scalable backend APIs developed using **Java Spring Boot**.
 
 ---
 
 ## Seamless User Experience
 
-1. **Unified Functionalities:**
-    - Whether users interact via the CLI or web frontend, they receive full-featured access to **CRUD operations**, **media uploads**, and **browsing content**.
-2. **Real-Time Updates:**
-    - Any changes made on one platform (CLI or web) are instantly reflected across the other for a seamless, synchronized user experience.
-3. **Tagging and Categorization:**
-    - Users can upload memes with tags or organize them into categories for better discoverability.
+1. **Unified User Access**:
+   - Users can manage files interactively through either the **CLI** or the **web application**.
+2. **Real-Time Updates**:
+   - Any file operations (upload/download, renaming, etc.) are synchronized instantly between platforms.
+3. **Tagging and Organization**:
+   - Files can be organized with **tags** or stored in folders for optimal access and classification.
 
 ---
 
 ## Key Learning Outcomes
 
-Through this project, the following skills are enhanced:
-1. **AWS Proficiency:**
-    - Leverage AWS services (Cognito, S3, RDS, EC2, and others) for cloud-based application development, including secure authentication, storage, and deployment.
-2. **Live Updates Across Platforms:**
-    - Develop real-time synchronization between a command-line application and a responsive web interface.
-3. **Containerization and Deployment:**
-    - Containerize the entire stack using **Docker** for consistent deployment.
-    - Deploy the containerized application in a cloud environment for scalability and reliability.
-4. **Comprehensive Documentation:**
-    - Deliver well-structured documentation to enhance maintainability, usability, and collaboration readiness.
+Through the development of this system, the following concepts and skills are enhanced:
+
+1. **Cloud Infrastructure**:
+   - Learn to utilize AWS services (**Cognito**, **S3**, **EC2**, **Memcached**) to build scalable and secure cloud-hosted applications.
+2. **Backend Development**:
+   - Explore **Java Spring Boot** for robust REST-based backend service development.
+3. **Frontend Web Development**:
+   - Gain hands-on experience with **React** to build modern, responsive, and user-centric web interfaces.
+4. **Containerization**:
+   - Use **Docker** to containerize the application for consistent deployment across environments.
+5. **CI/CD**:
+   - Automate testing and deployments using a cloud-based CI/CD pipeline to improve reliability and delivery speed.
+6. **Caching for Performance**:
+   - Optimize file retrieval operations using **Memcached** for caching data or metadata.
 
 ---
 
-## Future Scope
+## Future Enhancements
 
-1. Add **social features** such as upvotes, comments, and sharing memes between users.
-2. Expand content moderation by integrating machine learning for advanced filtering.
-3. Introduce AI-based meme recommendations using AWS AI/ML services (e.g., Amazon Rekognition, SageMaker).
+The project has the potential for future expansion:
+
+1. **Advanced File Access Control**:
+   - Enhance security by allowing users to set detailed access permissions for individual files or folders.
+2. **Scalability Improvements**:
+   - Explore horizontal scaling with container orchestration tools like **Kubernetes** for seamless growth.
+3. **Mobile App Development**:
+   - Extend the web platform to mobile devices for even greater accessibility.
 
 ---
 
 ## Summary
 
-This project is a **meme-sharing platform** designed to blend the power of **command-line interaction** with a **web application**, offering real-time synchronization and leveraging **AWS services** for security, scalability, and performance. By building this application, we aim to demonstrate expertise in modern software development practices, cloud deployment, and user-centric design, while creating a feature-rich and engaging application that blends humor with technology.
+This project builds a **cloud-based file storage service** combining the functionality of a **command-line interface** with a modern **web application**. By leveraging **AWS services**, **Docker**, and the latest backend and frontend frameworks, this system demonstrates proficiency in developing scalable, reliable, and user-friendly cloud-based solutions. This platform aims to serve as an example of modern development practices, bridging CLI power with web usability, all while ensuring high-quality performance backed by AWS infrastructure.
