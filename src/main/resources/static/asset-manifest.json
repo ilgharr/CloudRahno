@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/static/css/main.49faa5e3.css",
-    "main.js": "/static/js/main.d7c27055.js",
+    "main.js": "/static/js/main.0270bc9b.js",
     "static/media/logoCloud1CutLarge.png": "/static/media/logoCloud1CutLarge.c0c50a3ad3dbef81d468.png",
     "index.html": "/index.html",
     "main.49faa5e3.css.map": "/static/css/main.49faa5e3.css.map",
-    "main.d7c27055.js.map": "/static/js/main.d7c27055.js.map"
+    "main.0270bc9b.js.map": "/static/js/main.0270bc9b.js.map"
   },
   "entrypoints": [
     "static/css/main.49faa5e3.css",
-    "static/js/main.d7c27055.js"
+    "static/js/main.0270bc9b.js"
   ]
 }

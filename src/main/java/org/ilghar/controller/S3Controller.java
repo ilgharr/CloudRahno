@@ -1,3 +1,15 @@
+/*
+This module will handle the following
+
+logging in
+logging out
+fetching refresh token
+
+
+
+
+*/
+
 package org.ilghar.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,14 +34,17 @@ public class S3Controller {
 
     @PostMapping("/getid")
     public ResponseEntity<String> getID(@RequestBody Map<String, String> payload) throws Exception {
-        String userId = payload.get("userId");
-        if (userId == null || userId.isEmpty()) {
+        String user_id = payload.get("userId");
+        if (user_id == null || user_id.isEmpty()) {
             return ResponseEntity.badRequest().body("User ID is missing");
         }
-        String id_token = memcached.memcachedGetIdToken(userId);
+
+        String id_token = memcached.memcachedGetData(user_id);
         System.out.println("ID Token: " + id_token);
+
         String identityResponse = fetchIdentityId(id_token);
-        if (identityResponse != null || !identityResponse.isEmpty()) {
+        System.out.println("ID Token: " + identityResponse);
+        if (identityResponse == null || identityResponse.isEmpty()) {
             System.err.println("Failed to fetch Identity ID.");
         }
         return ResponseEntity.ok("User ID received successfully");

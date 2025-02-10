@@ -34,6 +34,14 @@ public class LoginController {
     public ResponseEntity<Void> login() throws IOException {
         // user is redirected to AWS Cognito Login/Signup page
         // responds with AWS login endpoint, client id, redirect uri and scope
+
+        // @CookieValue(value = "refresh_token", required = false) String refresh_token
+//        if(refresh_token != null){
+//            HttpHeaders headers = new HttpHeaders();
+//            headers.set("Location", "/home");
+//            return new ResponseEntity<>(headers, HttpStatus.FOUND);
+//        }
+
         String cognitoUrl = Secrets.AUTHORIZATION_ENDPOINT + "?" +
                 "client_id=" + Secrets.CLIENT_ID + "&" +
                 "response_type=code&" +
@@ -42,13 +50,12 @@ public class LoginController {
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Location", cognitoUrl);
-
         return new ResponseEntity<>(headers, HttpStatus.FOUND);
     }
 
     @GetMapping("/api/callback")
     public ResponseEntity<String> callback(@RequestParam(name = "code", required = false) String code,
-                                                        @RequestParam(name = "error", required = false) String error) throws JsonProcessingException {
+                                                        @RequestParam(name = "error", required = false) String error) {
         // AWS Cognito communicates with this endpoint
         // Code is received after successful login
         // code and secrets are exchanged for user token
@@ -59,7 +66,7 @@ public class LoginController {
 
         String user_id = "";
         String id_token = "";
-        String access_token = "";
+        String refresh_token = "";
 
         try {
             Map<String, String> tokenResponse = exchangeCodeForTokens(code);
@@ -71,25 +78,30 @@ public class LoginController {
 
             user_id = extractUserId(tokenResponse);
             id_token = extractIdToken(tokenResponse);
-            access_token = extractAccessToken(tokenResponse);
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            Map<String, String> tokens = new HashMap<>();
-
-            tokens.put("id_token", id_token);
-            tokens.put("access_token", access_token);
-
-            String jsonTokens = objectMapper.writeValueAsString(tokens);
+            refresh_token = extractRefreshToken(tokenResponse);
 
             if(user_id != null && id_token != null){
-                memcached.memcachedAddData(user_id, jsonTokens, 300);
+                memcached.memcachedAddData(user_id, id_token, 300);
             }
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.SET_COOKIE, generateHttpOnlyCookie("user_id", user_id,  428400));
+            headers.add(HttpHeaders.SET_COOKIE, generateHttpOnlyCookie("refresh_token", refresh_token,  428400));
+
+            return ResponseEntity.ok().headers(headers).build();
+
         } catch (Exception e) {
             throw new RuntimeException("Error while processing user login /api/callback.", e);
         }
-
-        return ResponseEntity.ok(user_id);
     }
+
+    // MUST ADD SECURE FIELD WHEN DEPLOYING
+    // THIS ONLY USES HTTP AND IS NOT SECURE
+    private String generateHttpOnlyCookie(String key, String value, int maxAgeInSeconds) {
+        return String.format("%s=%s; HttpOnly; Path=/; Max-Age=%d; SameSite=Strict",
+                key, value, maxAgeInSeconds);
+    }
+
     // /callback is supposed to do many things
     // caching
     // user session
@@ -97,6 +109,11 @@ public class LoginController {
     // fetch user data from database
     // create and send cookies.
     // finally will redirect to /home with the data to be rendered
+
+    @GetMapping("/check-session")
+    public ResponseEntity<Map<String, String>> checkSession(@CookieValue(value = "refresh_token", required = false) String refresh_token){
+        return ResponseEntity.ok(Map.of("isLoggedIn", refresh_token != null ? "true" : "false"));
+    }
 
     // the response does not contain a body
     // indicated in <void> return type
@@ -114,6 +131,8 @@ public class LoginController {
         System.out.println("Logging out from Cognito with URL: " + cognitoLogoutUrl);
 
         HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.SET_COOKIE, generateHttpOnlyCookie("user_id", "",  0));
+        headers.add(HttpHeaders.SET_COOKIE, generateHttpOnlyCookie("refresh_token", "",  0));
         headers.setLocation(URI.create(cognitoLogoutUrl));
         return ResponseEntity.status(HttpStatus.FOUND).headers(headers).build();
     }

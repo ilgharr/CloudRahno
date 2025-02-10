@@ -31,15 +31,6 @@ public class MemcachedHandler {
         }
     }
 
-    public void memcachedShutdown() {
-        if (this.memcachedClient != null) {
-            this.memcachedClient.shutdown();
-            System.out.println("Memcached connection shut down successfully.");
-        } else {
-            System.out.println("Memcached client is not initialized or already shut down.");
-        }
-    }
-
     public boolean memcachedAddData(String key, String value, int expiration) {
         if (key == null || key.isEmpty()) {
             throw new IllegalArgumentException("Adding KEY to memcached cannot be null or empty.");
@@ -65,6 +56,22 @@ public class MemcachedHandler {
         return true;
     }
 
+    public String memcachedGetData(String key) {
+        if (this.memcachedClient == null) {
+            throw new IllegalStateException("Memcached client is not connected!");
+        }
+        return (String) this.memcachedClient.get(key);
+    }
+
+    public void memcachedDelete(String key) {
+        if (this.memcachedClient == null) {
+            throw new IllegalStateException("Memcached client is not connected!");
+        }
+        this.memcachedClient.delete(key);
+    }
+
+    // UNUSED ------------------------
+
     public String memcachedGetIdToken(String key) {
         try {
             return new ObjectMapper()
@@ -87,17 +94,12 @@ public class MemcachedHandler {
         }
     }
 
-    public String memcachedGetData(String key) {
-        if (this.memcachedClient == null) {
-            throw new IllegalStateException("Memcached client is not connected!");
+    public void memcachedShutdown() {
+        if (this.memcachedClient != null) {
+            this.memcachedClient.shutdown();
+            System.out.println("Memcached connection shut down successfully.");
+        } else {
+            System.out.println("Memcached client is not initialized or already shut down.");
         }
-        return (String) this.memcachedClient.get(key);
-    }
-
-    public void memcachedDelete(String key) {
-        if (this.memcachedClient == null) {
-            throw new IllegalStateException("Memcached client is not connected!");
-        }
-        this.memcachedClient.delete(key);
     }
 }

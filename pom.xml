@@ -12,7 +12,7 @@
     </parent>
 
     <groupId>org.ilghar</groupId>
-    <artifactId>ShitShell</artifactId>
+    <artifactId>CloudRahno</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>

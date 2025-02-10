@@ -75,19 +75,6 @@ public final class LoginHelper {
         }
     }
 
-    public static String extractAccessToken(Map<String, String> tokenResponse) {
-        if (tokenResponse == null || tokenResponse.isEmpty()) {
-            throw new IllegalArgumentException("tokenResponse map is empty or null");
-        }
-
-        String accessToken = tokenResponse.get("access_token");
-        if (accessToken == null || accessToken.isEmpty()) {
-            throw new IllegalArgumentException("access_token is missing or empty");
-        }
-
-        return accessToken;
-    }
-
     public static String extractIdToken(Map<String, String> tokenResponse) {
         try {
             String idToken = tokenResponse.get("id_token");
@@ -101,10 +88,36 @@ public final class LoginHelper {
         }
     }
 
-
+    public static String extractRefreshToken(Map<String, String> tokenResponse) {
+        try {
+            String refreshToken = tokenResponse.get("refresh_token");
+            if (refreshToken == null || refreshToken.isEmpty()) {
+                throw new IllegalArgumentException("refresh_token is missing or empty");
+            }
+            return refreshToken;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 
 
     // ---------------------------UNUSED------------------------------------
+
+    public static String extractAccessToken(Map<String, String> tokenResponse) {
+        if (tokenResponse == null || tokenResponse.isEmpty()) {
+            throw new IllegalArgumentException("tokenResponse map is empty or null");
+        }
+
+        String accessToken = tokenResponse.get("access_token");
+        if (accessToken == null || accessToken.isEmpty()) {
+            throw new IllegalArgumentException("access_token is missing or empty");
+        }
+
+        return accessToken;
+    }
+
+
     public static void parseAndPrintFirstJwt(Map<String, String> tokenResponse) {
         try {
             // Look for the first valid JWT token in the map

@@ -1,15 +1,17 @@
-import React from "react";
 import { useLocation } from "react-router-dom";
+import React, {useEffect, useState} from 'react';
+import { useNavigate } from 'react-router-dom';
+import CheckSession from './CheckSession'
 
 const Home = () => {
-    // Use the `useLocation` hook to extract query parameters
-    const location = useLocation();
-    const queryParams = new URLSearchParams(location.search);
-    const isLoggedIn = queryParams.get("loggedIn") === "true";
+    const navigate = useNavigate();
+    const [loggedIn, setLoggedIn] = useState("");
+
+    CheckSession(setLoggedIn);
 
     return (
         <div>
-            <h1>{isLoggedIn ? "Logged In!" : "Not Logged In!"}</h1>
+        <h1>{loggedIn === "true" ? "Welcome Back!" : "Please log in."}</h1>
         </div>
     );
 };

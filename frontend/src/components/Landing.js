@@ -1,14 +1,21 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import { Navbar, Container, Button } from 'react-bootstrap';
-
 import LandingNavbar from './LandingNavbar'
 import Footer from './Footer'
 import "./CssHelper.js"
-const Landing = () => {
+import { useNavigate } from 'react-router-dom';
+import CheckSession from './CheckSession'
 
-    const handleLogin = () => {
-        window.location.href = '/login';
-    }
+const Landing = () => {
+    const navigate = useNavigate();
+    const [loggedIn, setLoggedIn] = useState(null);
+    CheckSession(setLoggedIn);
+
+    useEffect(() => {
+        if(loggedIn === "true"){
+            navigate("/home");
+        }
+    }, [loggedIn])
 
     return (
         <div>
