@@ -31,16 +31,17 @@ public class LoginController {
     public MemcachedHandler memcached;
 
     @GetMapping("/login")
-    public ResponseEntity<Void> login() throws IOException {
+    public ResponseEntity<Void> login(@CookieValue(value = "refresh_token", required = false) String refresh_token
+    ) throws IOException {
         // user is redirected to AWS Cognito Login/Signup page
         // responds with AWS login endpoint, client id, redirect uri and scope
 
-        // @CookieValue(value = "refresh_token", required = false) String refresh_token
-//        if(refresh_token != null){
-//            HttpHeaders headers = new HttpHeaders();
-//            headers.set("Location", "/home");
-//            return new ResponseEntity<>(headers, HttpStatus.FOUND);
-//        }
+        if(refresh_token != null){
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Location", "/home");
+            System.out.println("User attempted access to /login while already logged in");
+            return new ResponseEntity<>(headers, HttpStatus.FOUND);
+        }
 
         String cognitoUrl = Secrets.AUTHORIZATION_ENDPOINT + "?" +
                 "client_id=" + Secrets.CLIENT_ID + "&" +
@@ -102,14 +103,6 @@ public class LoginController {
                 key, value, maxAgeInSeconds);
     }
 
-    // /callback is supposed to do many things
-    // caching
-    // user session
-    // database creation on sign up
-    // fetch user data from database
-    // create and send cookies.
-    // finally will redirect to /home with the data to be rendered
-
     @GetMapping("/check-session")
     public ResponseEntity<Map<String, String>> checkSession(@CookieValue(value = "refresh_token", required = false) String refresh_token){
         return ResponseEntity.ok(Map.of("isLoggedIn", refresh_token != null ? "true" : "false"));
@@ -118,7 +111,14 @@ public class LoginController {
     // the response does not contain a body
     // indicated in <void> return type
     @GetMapping("/logout")
-    public ResponseEntity<Void> logout() {
+    public ResponseEntity<Void> logout(@CookieValue(value = "refresh_token", required = false) String refresh_token) {
+
+        if(refresh_token == null){
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Location", "/");
+            System.out.println("User attempted access to /logout while already logged out");
+            return new ResponseEntity<>(headers, HttpStatus.FOUND);
+        }
 
         // responds with AWS Cognito logout endpoint, client id and redirect uri
         String cognitoLogoutUrl = String.format(
@@ -136,6 +136,4 @@ public class LoginController {
         headers.setLocation(URI.create(cognitoLogoutUrl));
         return ResponseEntity.status(HttpStatus.FOUND).headers(headers).build();
     }
-
-
 }

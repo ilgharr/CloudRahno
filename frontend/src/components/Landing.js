@@ -9,13 +9,14 @@ import CheckSession from './CheckSession'
 const Landing = () => {
     const navigate = useNavigate();
     const [loggedIn, setLoggedIn] = useState(null);
+
     CheckSession(setLoggedIn);
 
     useEffect(() => {
         if(loggedIn === "true"){
             navigate("/home");
         }
-    }, [loggedIn])
+    }, [loggedIn, navigate])
 
     return (
         <div>

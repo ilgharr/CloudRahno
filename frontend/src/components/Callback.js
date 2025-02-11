@@ -1,10 +1,10 @@
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom"
+import LoadingScreen from "./LoadingScreen";
 
 const Callback = () => {
     const location = useLocation();
     const navigate = useNavigate();
-
 
     useEffect(() => {
         const params = new URLSearchParams(location.search);
@@ -35,7 +35,7 @@ const Callback = () => {
     // even tho "navigate" doesnt change it is good to add it as a dependency
     // because if react happens to go wrong for some reason, we want this here for safety
 
-    return null;
+    return (<LoadingScreen />);
 };
 
 export default Callback;
