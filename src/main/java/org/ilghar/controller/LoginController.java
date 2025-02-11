@@ -1,28 +1,22 @@
 package org.ilghar.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
 
-import com.fasterxml.jackson.databind.util.JSONPObject;
-import com.nimbusds.jose.crypto.RSASSAVerifier;
-import com.nimbusds.jose.jwk.*;
-import com.nimbusds.jwt.*;
-
 import org.ilghar.Secrets;
-
 import org.ilghar.handler.MemcachedHandler;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.util.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.net.*;
 import java.util.*;
-
-import static org.ilghar.controller.LoginHelper.*;
-
 
 @RestController
 public class LoginController {
@@ -96,13 +90,6 @@ public class LoginController {
         }
     }
 
-    // MUST ADD SECURE FIELD WHEN DEPLOYING
-    // THIS ONLY USES HTTP AND IS NOT SECURE
-    private String generateHttpOnlyCookie(String key, String value, int maxAgeInSeconds) {
-        return String.format("%s=%s; HttpOnly; Path=/; Max-Age=%d; SameSite=Strict",
-                key, value, maxAgeInSeconds);
-    }
-
     @GetMapping("/check-session")
     public ResponseEntity<Map<String, String>> checkSession(@CookieValue(value = "refresh_token", required = false) String refresh_token){
         return ResponseEntity.ok(Map.of("isLoggedIn", refresh_token != null ? "true" : "false"));
@@ -135,5 +122,92 @@ public class LoginController {
         headers.add(HttpHeaders.SET_COOKIE, generateHttpOnlyCookie("refresh_token", "",  0));
         headers.setLocation(URI.create(cognitoLogoutUrl));
         return ResponseEntity.status(HttpStatus.FOUND).headers(headers).build();
+    }
+
+    public static Map<String, String> exchangeCodeForTokens(String code) {
+        RestTemplate restTemplate = new RestTemplate();
+
+        MultiValueMap<String, String> requestBody = new LinkedMultiValueMap<>();
+        requestBody.add("grant_type", "authorization_code");
+        requestBody.add("client_id", Secrets.CLIENT_ID);
+        requestBody.add("client_secret", Secrets.CLIENT_SECRET);
+        requestBody.add("redirect_uri", Secrets.REDIRECT_URI);
+        requestBody.add("code", code);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        try {
+            ResponseEntity<String> response = restTemplate.postForEntity(
+                    Secrets.TOKEN_ENDPOINT, new HttpEntity<>(requestBody, headers), String.class);
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                return new ObjectMapper().readValue(response.getBody(), new TypeReference<>() {});
+            } else {
+                throw new HttpClientErrorException(response.getStatusCode(), "Token exchange failed.");            }
+        } catch (Exception e) {
+            throw new RuntimeException("Error while exchanging code for tokens", e);
+        }
+    }
+
+    // MUST ADD SECURE FIELD WHEN DEPLOYING
+    // THIS ONLY USES HTTP AND IS NOT SECURE
+    private String generateHttpOnlyCookie(String key, String value, int maxAgeInSeconds) {
+        return String.format("%s=%s; HttpOnly; Path=/; Max-Age=%d; SameSite=Strict",
+                key, value, maxAgeInSeconds);
+    }
+
+    public static String extractUserId(Map<String, String> tokenResponse) throws JsonProcessingException {
+        try{
+            String id_token = extractIdToken(tokenResponse);
+
+            String[] tokenParts = id_token.split("\\.");
+            if (tokenParts.length != 3) {
+                throw new IllegalArgumentException("Invalid id_token format.");
+            }
+
+            // Base64.getDecoder(): returns a Base64.Decoder instance
+            // decode(): decodes the base 64 encoded String, returns as byte[]
+            // new String(): converts bytes to String
+            String payload = new String(Base64.getDecoder().decode(tokenParts[1]));
+
+            int sub_start = payload.indexOf("\"sub\":\"") + 7;
+            int sub_end = payload.indexOf("\"", sub_start);
+
+            // checks if "sub" field is missing
+            if (sub_start < 7 || sub_end == -1) {
+                throw new IllegalArgumentException("sub claim not found in id_token");
+            }
+
+            return payload.substring(sub_start, sub_end);
+        } catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static String extractIdToken(Map<String, String> tokenResponse) {
+        try {
+            String idToken = tokenResponse.get("id_token");
+            if (idToken == null || idToken.isEmpty()) {
+                throw new IllegalArgumentException("id_token is missing or empty");
+            }
+            return idToken;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static String extractRefreshToken(Map<String, String> tokenResponse) {
+        try {
+            String refreshToken = tokenResponse.get("refresh_token");
+            if (refreshToken == null || refreshToken.isEmpty()) {
+                throw new IllegalArgumentException("refresh_token is missing or empty");
+            }
+            return refreshToken;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }

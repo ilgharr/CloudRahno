@@ -15,6 +15,14 @@ const Home = () => {
         }
     }, [loggedIn, navigate]);
 
+fetch("/fetch-token", {
+  method: "POST",
+  credentials: "include",
+})
+  .then(response => response.text())
+  .then(data => console.log(data))
+  .catch(err => console.error(err));
+
     return (
         <div>
         <h1>{loggedIn === "true" ? "Welcome Back!" : null}</h1>
