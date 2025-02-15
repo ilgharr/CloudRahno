@@ -48,9 +48,10 @@ public class MemcachedHandler {
             throw new IllegalArgumentException("Expiration time must be no less than 250 milliseconds.");
         }
 
-        if (this.memcachedClient.get(key) != null) {
-            return false;
-        }
+        // NOTE! duplicates are overwritten by memcached
+//        if (this.memcachedClient.get(key) != null) {
+//            return false;
+//        }
 
         this.memcachedClient.set(key, expiration, value);
         return true;

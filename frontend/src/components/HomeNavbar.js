@@ -2,9 +2,9 @@ import React, {useState} from 'react';
 import { Navbar } from 'react-bootstrap';
 import logo from '../assets/logoCloud1CutLarge.png'
 
-const LandingNavbar =() => {
-    const handleLogin = () => {
-        window.location.href = '/login';
+const HomeNavbar =() => {
+    const handleLogout = () => {
+        window.location.href = '/logout';
     }
 
     return(
@@ -18,12 +18,11 @@ const LandingNavbar =() => {
                <h1 className="logo-name-text">CloudRahno</h1>
             </Navbar.Brand>
 
-            <button className="login-button" onClick={handleLogin}>
-                Get Started
+            <button className="logout-button" onClick={handleLogout}>
+                Logout
             </button>
-
         </Navbar>
     )
 }
 
-export default LandingNavbar;
+export default HomeNavbar;

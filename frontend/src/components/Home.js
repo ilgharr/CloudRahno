@@ -1,7 +1,8 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate} from "react-router-dom";
 import React, {useEffect, useState} from 'react';
-import { useNavigate } from 'react-router-dom';
 import CheckSession from './CheckSession'
+import HomeNavbar from './HomeNavbar'
+import { Navbar } from 'react-bootstrap';
 
 const Home = () => {
     const navigate = useNavigate();
@@ -15,17 +16,10 @@ const Home = () => {
         }
     }, [loggedIn, navigate]);
 
-fetch("/fetch-token", {
-  method: "POST",
-  credentials: "include",
-})
-  .then(response => response.text())
-  .then(data => console.log(data))
-  .catch(err => console.error(err));
-
     return (
         <div>
-        <h1>{loggedIn === "true" ? "Welcome Back!" : null}</h1>
+            <HomeNavbar/>
+            <h1>{loggedIn === "true" ? "Welcome Back!" : null}</h1>
         </div>
     );
 };

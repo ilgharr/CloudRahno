@@ -90,6 +90,7 @@ public class LoginController {
         }
     }
 
+    // if a refresh_token exists in the cookie that means user is logged in
     @GetMapping("/check-session")
     public ResponseEntity<Map<String, String>> checkSession(@CookieValue(value = "refresh_token", required = false) String refresh_token){
         return ResponseEntity.ok(Map.of("isLoggedIn", refresh_token != null ? "true" : "false"));
@@ -97,8 +98,10 @@ public class LoginController {
 
     // the response does not contain a body
     // indicated in <void> return type
+    // this clears the cookie in the header by setting the expiration to 0
     @GetMapping("/logout")
-    public ResponseEntity<Void> logout(@CookieValue(value = "refresh_token", required = false) String refresh_token) {
+    public ResponseEntity<Void> logout(@CookieValue(value = "refresh_token", required = false) String refresh_token,
+                                       @CookieValue(value = "user_id", required = false) String user_id) {
 
         if(refresh_token == null){
             HttpHeaders headers = new HttpHeaders();
@@ -107,12 +110,15 @@ public class LoginController {
             return new ResponseEntity<>(headers, HttpStatus.FOUND);
         }
 
+        System.out.println("User logged out successfully.");
+        memcached.memcachedDelete(user_id);
+
         // responds with AWS Cognito logout endpoint, client id and redirect uri
         String cognitoLogoutUrl = String.format(
                 "%s?client_id=%s&logout_uri=%s",
                 Secrets.LOGOUT_ENDPOINT,
                 Secrets.CLIENT_ID,
-                Secrets.LOGOUT_URI
+                Secrets.DOMAIN
         );
 
         System.out.println("Logging out from Cognito with URL: " + cognitoLogoutUrl);
@@ -124,6 +130,7 @@ public class LoginController {
         return ResponseEntity.status(HttpStatus.FOUND).headers(headers).build();
     }
 
+    // code from successful user login is exchanged for AWS Cognito token
     public static Map<String, String> exchangeCodeForTokens(String code) {
         RestTemplate restTemplate = new RestTemplate();
 
@@ -156,6 +163,7 @@ public class LoginController {
                 key, value, maxAgeInSeconds);
     }
 
+    // extract user id (SUB) from the token recieved by aws after exchanging one time use code
     public static String extractUserId(Map<String, String> tokenResponse) throws JsonProcessingException {
         try{
             String id_token = extractIdToken(tokenResponse);
@@ -185,6 +193,7 @@ public class LoginController {
         }
     }
 
+    // extract id token from the token recieved by aws after exchanging one time use code
     public static String extractIdToken(Map<String, String> tokenResponse) {
         try {
             String idToken = tokenResponse.get("id_token");
@@ -198,6 +207,7 @@ public class LoginController {
         }
     }
 
+    // extract refresh token from the token recieved by aws after exchanging one time use code
     public static String extractRefreshToken(Map<String, String> tokenResponse) {
         try {
             String refreshToken = tokenResponse.get("refresh_token");

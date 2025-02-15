@@ -1,9 +1,2 @@
-This file is for noting down commit comments as I write code.
+logging out will erase cached user
 
-
-Self code review.
-Error handling added and/or improved for the following, Main, MemcachedHandler, LoginHelper, LoginController
-
-Minor code changes, removing redundancies.
-
-Logging will be added.

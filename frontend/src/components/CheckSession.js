@@ -1,7 +1,11 @@
 import React, {useState, useEffect} from 'react'
 import {useNavigate} from 'react-router-dom'
 
+// browser does not allow access to HTTPOnly marked cookies
+// a cookie is basically a key value pair sent within the Header
+
 const CheckSession = (setLoggedIn) => {
+
     useEffect(() => {
         (async () => {
             try {
@@ -23,6 +27,7 @@ const CheckSession = (setLoggedIn) => {
             }
         })(); // REMEMBER TO INVOKE THE ASYNC WITH () AT THE END OF IT!!!!!
     }, [setLoggedIn]);
+
 }
 
 export default CheckSession;
