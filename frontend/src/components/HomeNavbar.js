@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import { Navbar } from 'react-bootstrap';
-import logo from '../assets/logoCloud1CutLarge.png'
+import logo from '../assets/cloud_logo.png'
 
 const HomeNavbar =() => {
     const handleLogout = () => {

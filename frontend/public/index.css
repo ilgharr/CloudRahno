@@ -63,7 +63,7 @@ html, body, #root {
   }
 }
 
-/*--------------------------LOGO-----------------------*/
+/*--------------------------LOGO and LANDING PAGE-----------------------*/
 
 .logo-image{
     height: 95%;
@@ -93,6 +93,10 @@ html, body, #root {
 
 .landing-page-info p{
     font-size: 25px
+}
+
+.notice{
+    color: white;
 }
 
 /*--------------------------GOOGLE FONT OUTFIT-----------------------*/
@@ -170,6 +174,55 @@ button.login-button:hover{
   100% {transform: rotate(0deg);}
 }
 
+/*--------------------------HOME-----------------------*/
+
+.home-main-container{
+    display: flex;
+    flex-direction: row;
+    gap: 50px;
+}
+
+.upload-file{
+    margin: 50px 0 0 0;
+    border:solid 2px;
+    border-color: white;
+    border-radius: 20px;
+    text-align: center;
+    font-size: 18px;
+    color: white;
+}
+
+.upload-file:hover{
+    font-weight: bold;
+    cursor: pointer;
+}
+
+img.upload-file-image{
+    margin: 0 auto 0 auto;
+    padding: 0;
+    width: 400px
+}
+
+.selected-file{
+    margin: 50px 0 0 0;
+    border:solid 2px;
+    border-color: white;
+    border-radius: 20px;
+    text-align: center;
+    font-size: 18px;
+    color: white;
+}
+
+.change-file-name{
+    margin: 40px auto 0 auto;
+    padding: 0 0 0 10px;
+    border: solid 1px;
+    border-color: white;
+    border-radius: 5px;
+    background: transparent;
+    color: white;
+    font-size: 25px;
+}
 /*--------------------------FOOTER-----------------------*/
 
 .footer {

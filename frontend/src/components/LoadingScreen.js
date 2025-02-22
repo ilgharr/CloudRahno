@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import earth from "../assets/earth_cut.png"
+import earth from "../assets/earth_rotating.png"
 const LoadingScreen = () => {
   return (
     <div className="loading-screen">
