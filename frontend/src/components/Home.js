@@ -1,66 +1,49 @@
-import { useLocation, useNavigate} from "react-router-dom";
-import React, {useEffect, useState, useRef} from 'react';
-import { Navbar, Container } from 'react-bootstrap';
-import CheckSession from './CheckSession'
-import HomeNavbar from './HomeNavbar'
-import UploadCloud from '../assets/cloud_upload.png'
+import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState, useRef } from "react";
+import { Container } from "react-bootstrap";
+import CheckSession from "./CheckSession";
+import HomeNavbar from "./HomeNavbar";
+import UploadCloud from "../assets/cloud_upload.png";
 
-const validateFile = (file, allowedTypes, maxSize) => {
-    if(!file){
-        alert("No file selected!");
-        return false;
+const handleFileUpload = async (file) => {
+    if (!file || file.length === 0) {
+        alert("No file selected.");
+        return;
     }
 
-    if(!allowedTypes.includes(file.type)){
-        alert("Invalid file type. Allowed types: " + allowedTypes.join(", "));
-        return false;
-    }
+    const formData = new FormData();
+    file.forEach((f) => {
+        formData.append("file", f);
+    });
 
-    if (file.size > maxSize){
-        alert("File size exceeds the limit of" + maxSize / (1024 * 1024) + "MB.");
-        return false
-    }
+    try {
+        const response = await fetch("http://localhost:8443/upload", {
+            method: "POST",
+            credentials: "include",
+            body: formData
+        });
 
-    return true;
-}
+        if (response.ok) {
+            const result = await response.text();
+            alert("Files uploaded successfully!");
+        } else {
+            const errorMessage = await response.text();
+            console.error("Error:", errorMessage);
+            alert("An error occurred while uploading the file(s).");
+        }
+    } catch (error) {
+        console.error("Error during file upload:", error);
+        alert("An error occurred. Please try again.");
+    }
+};
 
 const Home = () => {
     const navigate = useNavigate();
     const fileInput = useRef(null);
     const [loggedIn, setLoggedIn] = useState(null);
-    const [dragging, setDragging] = useState(false);
-    const [file, setFile] = useState(null);
-    const [fileName, setFileName] = useState("")
-    const allowedFileSize = 20 * 1024 * 1024;
-    const allowedTypes = [
-        "application/zip", // ZIP
-        "application/x-7z-compressed", // 7Z
-        "application/x-rar-compressed", // RAR
-        "application/gzip", // GZIP
-        "application/x-tar", // TAR
-        "application/pdf", // PDF
-        "application/vnd.ms-powerpoint", // PPT
-        "application/vnd.openxmlformats-officedocument.presentationml.presentation", // PPTX
-        "application/vnd.ms-excel", // XLS
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // XLSX
-        "application/vnd.oasis.opendocument.spreadsheet", // ODS
-        "text/csv", // CSV
-        "application/msword", // DOC
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // DOCX
-        "text/plain", // TXT
-        "text/html", // HTML
-        "text/css", // CSS
-        "application/xml", // XML
-        "application/json", // JSON
-        "application/javascript", // JavaScript files
-        "video/mp4", // MP4
-        "video/mpeg", // MPEG
-        "audio/mpeg", // MP3
-        "image/svg+xml", // SVG
-        "image/jpeg", // JPEG, JPG
-        "image/png", // PNG
-        "image/gif" // GIF
-    ];
+    const [file, setFile] = useState([]);
+    const [fileSize, setFileSize] = useState(0);
+    const MAX_SIZE = 10 * 1024 * 1024;
 
     CheckSession(setLoggedIn);
 
@@ -75,63 +58,61 @@ const Home = () => {
     };
 
     const handleFileChange = (event) => {
-        const selectedFile = event.target.files[0];
-        if(!validateFile(selectedFile, allowedTypes, allowedFileSize)){return;}
-        setFile(selectedFile);
+        const selectedFiles = Array.from(event.target.files);
+        setFile(selectedFiles);
+        const size = selectedFiles.reduce((acc, file) => acc + file.size, 0);
+        setFileSize(size);
     };
 
-    const handleDragOver = (event) => {
-        event.preventDefault();
-        setDragging(true);
+    const handleFileRemove = () => {
+        setFile([]);
+        setFileSize(0);
     };
 
-    const handleDragLeave = (event) => {
-        event.preventDefault();
-        setDragging(false);
-    }
-
-    const handleDrop = (event) => {
-        const selectedFile = event.target.files[0];
-        if(!validateFile(selectedFile, allowedTypes, allowedFileSize)){return;}
-        setFile(selectedFile);
+    const handleFileSubmit = () => {
+        handleFileUpload(file);
+        setFile([]);
+        setFileSize(0);
     };
-
-    const handleNameChange = (event) => {
-        setFileName(event.target.value);
-    }
 
     return (
         <div>
-            <HomeNavbar/>
-            <Container className="home-main-container">
-                <Container className="upload-file"
-                    onClick={handleClick}
-                    onDragOver={handleDragOver}
-                    onDragLeave={handleDragLeave}
-                    onDrop={handleDrop}
-                >
-                    <p>Drag and Drop a File Here Or Click to Select a File</p>
-
-                    <img src={UploadCloud} alt="Upload File Image" className="upload-file-image" />
-
-                    <input
-                        type="file"
-                        ref={fileInput}
-                        style={{ display: 'none' }}
-                        onChange={handleFileChange}
-                    />
-
-                </Container>
-                {file ? (
-                    <Container className="selected-file">
-                        <input className="change-file-name"
-                            type="text"
-                            value={fileName}
-                            onChange={handleNameChange}
-                            placeholder={file.name}
+            <HomeNavbar />
+            <Container>
+                {file.length < 1 ? (
+                    <Container className="upload-file" onClick={handleClick}>
+                        <p>Drag and Drop Or Click to Select Files</p>
+                        <img
+                            src={UploadCloud}
+                            alt="Upload File Image"
+                            className="upload-file-image"
+                        />
+                        <input
+                            type="file"
+                            ref={fileInput}
+                            style={{ display: "none" }}
+                            onChange={handleFileChange}
+                            multiple
                         />
                     </Container>
-                ) : null}
+                ) : (
+                    <>
+                        {fileSize < MAX_SIZE ? (
+                            <>
+                                <Container className="selected-file">
+                                    <p>{file.length} file(s) selected</p>
+                                    <button onClick={handleFileSubmit}>Submit</button>
+                                    <button onClick={handleFileRemove}>Remove</button>
+                                </Container>
+                            </>
+                        ) : (
+                            <>
+                                {alert("No file larger than 10 MB")}
+                                {handleFileRemove()}
+                            </>
+                        )}
+                    </>
+                )}
             </Container>
         </div>
     );

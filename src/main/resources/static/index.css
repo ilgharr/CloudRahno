@@ -63,7 +63,7 @@ html, body, #root {
   }
 }
 
-/*--------------------------LOGO-----------------------*/
+/*--------------------------LOGO and LANDING PAGE-----------------------*/
 
 .logo-image{
     height: 95%;
@@ -95,27 +95,14 @@ html, body, #root {
     font-size: 25px
 }
 
-/*--------------------------GOOGLE FONT OUTFIT-----------------------*/
-
-@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap");
-
-.outfit-light {
-  font-family: "Outfit", serif;
-  font-optical-sizing: auto;
-  font-weight: 100;
-  font-style: normal;
+.notice{
+    color: white;
 }
 
-.outfit-bold {
-  font-family: "Outfit", serif;
-  font-optical-sizing: auto;
-  font-weight: 900;
-  font-style: normal;
-}
+/*--------------------------LOGOUT AND LOGIN BUTTON-----------------------*/
 
-/*--------------------------LOGOUT BUTTON-----------------------*/
-
-button.logout-button{
+button.logout-button,
+button.login-button {
     background-color: rgba(0, 0, 0, 0.2);
     margin: 5px 15px 5px auto;
     color: white;
@@ -127,35 +114,8 @@ button.logout-button{
     font-size: 20px;
 }
 
-button.logout-button:hover{
-    background-color: white;
-    color: black;
-    border-color: black;
-    animation: tilt 1s infinite ease-in-out;
-}
-
-@keyframes tilt {
-  0% {transform: rotate(0deg);}
-  25% {transform: rotate(-10deg);}
-  50% {transform: rotate(0deg);}
-  75% {transform: rotate(10deg);}
-  100% {transform: rotate(0deg);}
-}
-/*--------------------------GET STARTED BUTTON ANIMATION-----------------------*/
-
-button.login-button{
-    background-color: rgba(0, 0, 0, 0.2);
-    margin: 5px 15px 5px auto;
-    color: white;
-    border: solid 2px;
-    padding: 10px 20px;
-    border-radius: 5px;
-    transition: transform 0.2s ease;
-    height: 55px;
-    font-size: 20px;
-}
-
-button.login-button:hover{
+button.logout-button:hover,
+button.login-button:hover {
     background-color: white;
     color: black;
     border-color: black;
@@ -170,6 +130,64 @@ button.login-button:hover{
   100% {transform: rotate(0deg);}
 }
 
+/*--------------------------HOME-----------------------*/
+
+.upload-file{
+    margin: 50px 0 0 0;
+    border:solid 2px;
+    border-color: white;
+    border-radius: 20px;
+    text-align: center;
+    font-size: 18px;
+    color: white;
+    height: 292px;
+}
+
+.upload-file:hover{
+    font-weight: bold;
+    cursor: pointer;
+}
+
+img.upload-file-image{
+    margin: 0 auto 0 auto;
+    padding: 0;
+    width: 400px
+}
+
+.selected-file{
+    margin: 50px auto 0 auto;
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    gap: 30px;
+    font-size: 18px;
+    color: white;
+    font-size: 30px;
+}
+
+.change-file-name{
+    margin: 40px auto 0 auto;
+    padding: 0 0 0 10px;
+    border: solid 1px;
+    border-color: white;
+    border-radius: 5px;
+    background: transparent;
+    color: white;
+    font-size: 25px;
+}
+
+.selected-file > button{
+    font-size: 20px;
+    border-radius: 5px;
+        padding: 10px 20px;
+    background-color: rgba(0, 0, 0, 0.2);
+    color: white;
+}
+
+.selected-file > button:hover{
+    background-color: white;
+    color: black;
+}
 /*--------------------------FOOTER-----------------------*/
 
 .footer {
