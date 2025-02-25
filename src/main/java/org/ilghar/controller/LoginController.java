@@ -37,14 +37,14 @@ public class LoginController {
             return new ResponseEntity<>(headers, HttpStatus.FOUND);
         }
 
-        String cognitoUrl = Secrets.AUTHORIZATION_ENDPOINT + "?" +
+        String cognito_url = Secrets.AUTHORIZATION_ENDPOINT + "?" +
                 "client_id=" + Secrets.CLIENT_ID + "&" +
                 "response_type=code&" +
                 "redirect_uri=" + Secrets.REDIRECT_URI + "&" +
                 "scope=" + Secrets.SCOPES;
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Location", cognitoUrl);
+        headers.set("Location", cognito_url);
         return new ResponseEntity<>(headers, HttpStatus.FOUND);
     }
 
@@ -64,19 +64,19 @@ public class LoginController {
         String refresh_token = "";
 
         try {
-            Map<String, String> tokenResponse = exchangeCodeForTokens(code);
-            if (tokenResponse == null) {
+            Map<String, String> token_response = exchangeCodeForTokens(code);
+            if (token_response == null) {
                 return ResponseEntity
                         .status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body("Exchanging code for token failed.");
             }
 
-            user_id = extractUserId(tokenResponse);
-            id_token = extractIdToken(tokenResponse);
-            refresh_token = extractRefreshToken(tokenResponse);
+            user_id = extractUserId(token_response);
+            id_token = extractIdToken(token_response);
+            refresh_token = extractRefreshToken(token_response);
 
             if(user_id != null && id_token != null){
-                memcached.memcachedAddData(user_id, id_token, 300);
+                memcached.memcachedAddData(user_id, id_token, 295); // 4 minutes 55 seconds, 5 second offset
             }
 
             HttpHeaders headers = new HttpHeaders();
@@ -114,39 +114,39 @@ public class LoginController {
         memcached.memcachedDelete(user_id);
 
         // responds with AWS Cognito logout endpoint, client id and redirect uri
-        String cognitoLogoutUrl = String.format(
+        String cognito_logout_url = String.format(
                 "%s?client_id=%s&logout_uri=%s",
                 Secrets.LOGOUT_ENDPOINT,
                 Secrets.CLIENT_ID,
                 Secrets.DOMAIN
         );
 
-        System.out.println("Logging out from Cognito with URL: " + cognitoLogoutUrl);
+        System.out.println("Logging out from Cognito with URL: " + cognito_logout_url);
 
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.SET_COOKIE, generateHttpOnlyCookie("user_id", "",  0));
         headers.add(HttpHeaders.SET_COOKIE, generateHttpOnlyCookie("refresh_token", "",  0));
-        headers.setLocation(URI.create(cognitoLogoutUrl));
+        headers.setLocation(URI.create(cognito_logout_url));
         return ResponseEntity.status(HttpStatus.FOUND).headers(headers).build();
     }
 
     // code from successful user login is exchanged for AWS Cognito token
     public static Map<String, String> exchangeCodeForTokens(String code) {
-        RestTemplate restTemplate = new RestTemplate();
+        RestTemplate rest_template = new RestTemplate();
 
-        MultiValueMap<String, String> requestBody = new LinkedMultiValueMap<>();
-        requestBody.add("grant_type", "authorization_code");
-        requestBody.add("client_id", Secrets.CLIENT_ID);
-        requestBody.add("client_secret", Secrets.CLIENT_SECRET);
-        requestBody.add("redirect_uri", Secrets.REDIRECT_URI);
-        requestBody.add("code", code);
+        MultiValueMap<String, String> request_body = new LinkedMultiValueMap<>();
+        request_body.add("grant_type", "authorization_code");
+        request_body.add("client_id", Secrets.CLIENT_ID);
+        request_body.add("client_secret", Secrets.CLIENT_SECRET);
+        request_body.add("redirect_uri", Secrets.REDIRECT_URI);
+        request_body.add("code", code);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         try {
-            ResponseEntity<String> response = restTemplate.postForEntity(
-                    Secrets.TOKEN_ENDPOINT, new HttpEntity<>(requestBody, headers), String.class);
+            ResponseEntity<String> response = rest_template.postForEntity(
+                    Secrets.TOKEN_ENDPOINT, new HttpEntity<>(request_body, headers), String.class);
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 return new ObjectMapper().readValue(response.getBody(), new TypeReference<>() {});
             } else {
@@ -158,25 +158,25 @@ public class LoginController {
 
     // MUST ADD SECURE FIELD WHEN DEPLOYING
     // THIS ONLY USES HTTP AND IS NOT SECURE
-    private String generateHttpOnlyCookie(String key, String value, int maxAgeInSeconds) {
+    private String generateHttpOnlyCookie(String key, String value, int expiration) {
         return String.format("%s=%s; HttpOnly; Path=/; Max-Age=%d; SameSite=Strict",
-                key, value, maxAgeInSeconds);
+                key, value, expiration);
     }
 
     // extract user id (SUB) from the token recieved by aws after exchanging one time use code
-    public static String extractUserId(Map<String, String> tokenResponse) throws JsonProcessingException {
+    public static String extractUserId(Map<String, String> token_response) throws JsonProcessingException {
         try{
-            String id_token = extractIdToken(tokenResponse);
+            String id_token = extractIdToken(token_response);
 
-            String[] tokenParts = id_token.split("\\.");
-            if (tokenParts.length != 3) {
+            String[] token_parts = id_token.split("\\.");
+            if (token_parts.length != 3) {
                 throw new IllegalArgumentException("Invalid id_token format.");
             }
 
             // Base64.getDecoder(): returns a Base64.Decoder instance
             // decode(): decodes the base 64 encoded String, returns as byte[]
             // new String(): converts bytes to String
-            String payload = new String(Base64.getDecoder().decode(tokenParts[1]));
+            String payload = new String(Base64.getDecoder().decode(token_parts[1]));
 
             int sub_start = payload.indexOf("\"sub\":\"") + 7;
             int sub_end = payload.indexOf("\"", sub_start);
@@ -194,13 +194,13 @@ public class LoginController {
     }
 
     // extract id token from the token recieved by aws after exchanging one time use code
-    public static String extractIdToken(Map<String, String> tokenResponse) {
+    public static String extractIdToken(Map<String, String> token_response) {
         try {
-            String idToken = tokenResponse.get("id_token");
-            if (idToken == null || idToken.isEmpty()) {
+            String id_token = token_response.get("id_token");
+            if (id_token == null || id_token.isEmpty()) {
                 throw new IllegalArgumentException("id_token is missing or empty");
             }
-            return idToken;
+            return id_token;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -208,13 +208,13 @@ public class LoginController {
     }
 
     // extract refresh token from the token recieved by aws after exchanging one time use code
-    public static String extractRefreshToken(Map<String, String> tokenResponse) {
+    public static String extractRefreshToken(Map<String, String> token_response) {
         try {
-            String refreshToken = tokenResponse.get("refresh_token");
-            if (refreshToken == null || refreshToken.isEmpty()) {
+            String refresh_token = token_response.get("refresh_token");
+            if (refresh_token == null || refresh_token.isEmpty()) {
                 throw new IllegalArgumentException("refresh_token is missing or empty");
             }
-            return refreshToken;
+            return refresh_token;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
