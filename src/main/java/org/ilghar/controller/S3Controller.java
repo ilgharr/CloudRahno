@@ -1,9 +1,10 @@
 package org.ilghar.controller;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ilghar.Secrets;
 import org.ilghar.handler.MemcachedHandler;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.util.LinkedMultiValueMap;
@@ -15,9 +16,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
@@ -36,7 +34,6 @@ public class S3Controller {
     @Autowired
     public MemcachedHandler memcached;
 
-    private static final String UPLOAD_DIR = "./uploads";
     final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
     @PostMapping("/upload")
@@ -75,7 +72,7 @@ public class S3Controller {
                     String file_name = file.getOriginalFilename();
                     System.out.println("Processing file: " + file_name);
 
-                    Map<String, String> presigned_data = generatePresignedUrl(user_id, file_name);
+                    Map<String, String> presigned_data = generatePresignedUploadUrl(user_id, file_name);
                     String presigned_url = presigned_data.get("presignedUrl");
                     System.out.println("Pre-signed URL generated: " + presigned_url);
 
@@ -132,7 +129,6 @@ public class S3Controller {
         }
     }
 
-
     // ---------------------------------------------------------------------------------------------------------------------------
     // ---------------------------------------------------------------------------------------------------------------------------
     // ---------------------------------------------------------------------------------------------------------------------------
@@ -161,7 +157,68 @@ public class S3Controller {
         }
     }
 
-    public Map<String, String> generatePresignedUrl(String userId, String filename) {
+    public Map<String, String> generatePresignedDownloadUrl(String userId, String filename) {
+        try {
+            System.out.println("Generating pre-signed URL for file: " + filename);
+
+            // Configuration and credentials
+            final String bucketName = Secrets.BUCKET_NAME;
+            final String region = Secrets.BUCKET_REGION;
+            final String service = "s3";
+            final String accessKey = Secrets.ACCESS_KEY;
+            final String secretKey = Secrets.SECRET_KEY;
+
+            String objectKey = userId + "/" + filename;
+
+            // AWS algorithm and date formatting
+            String algorithm = "AWS4-HMAC-SHA256";
+            String amzDate = getAmzDate();
+            String dateStamp = getDateStamp();
+            System.out.println("amzDate (request date in UTC): " + amzDate);
+
+            String credentialScope = dateStamp + "/" + region + "/" + service + "/aws4_request";
+
+            String canonicalUri = "/" + objectKey;
+            String canonicalQueryString = buildCanonicalQueryString(algorithm, accessKey, credentialScope, amzDate);
+
+            String canonicalHeaders = "host:" + bucketName + ".s3." + region + ".amazonaws.com\n";
+            String signedHeaders = "host";
+            String payloadHash = "UNSIGNED-PAYLOAD";
+
+            String canonicalRequest = buildCanonicalRequest(
+                    "PUT",
+                    canonicalUri,
+                    canonicalQueryString,
+                    canonicalHeaders,
+                    signedHeaders,
+                    payloadHash
+            );
+
+            // String to Sign
+            String stringToSign = buildStringToSign(algorithm, amzDate, credentialScope, canonicalRequest);
+
+            // Signature
+            byte[] signingKey = getSignatureKey(secretKey, dateStamp, region, service);
+            String signature = hmacSHA256Hex(stringToSign, signingKey);
+
+            // Generate presigned URL
+            String presignedUrl = "https://" + bucketName + ".s3." + region + ".amazonaws.com/" + objectKey +
+                    "?" + canonicalQueryString + "&X-Amz-Signature=" + signature;
+
+            // Response map
+            Map<String, String> response = new HashMap<>();
+            response.put("presignedUrl", presignedUrl);
+            response.put("key", objectKey);
+
+            System.out.println("Generated pre-signed URL: " + presignedUrl);
+            return response;
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error generating pre-signed URL", e);
+        }
+    }
+
+    public Map<String, String> generatePresignedUploadUrl(String userId, String filename) {
         try {
             System.out.println("Generating pre-signed URL for file: " + filename);
 

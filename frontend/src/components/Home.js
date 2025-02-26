@@ -4,6 +4,7 @@ import { Container } from "react-bootstrap";
 import CheckSession from "./CheckSession";
 import HomeNavbar from "./HomeNavbar";
 import UploadCloud from "../assets/cloud_upload.png";
+import JSZip from "jszip";
 
 const handleFileUpload = async (file) => {
     if (!file || file.length === 0) {
@@ -37,21 +38,31 @@ const handleFileUpload = async (file) => {
     }
 };
 
+// given an array of files, returns a single .zip with files inside it
+const createZip = async (files, fileName) => {
+    const name = "hello";
+    const zip = new JSZip();
+    files.forEach((file) => {zip.file(file.name, file);});
+    const zipBlob = await zip.generateAsync({ type: "blob" });
+    return new File([zipBlob], fileName, { type: "application/zip" });
+}
+
 const Home = () => {
     const navigate = useNavigate();
     const fileInput = useRef(null);
     const [loggedIn, setLoggedIn] = useState(null);
     const [file, setFile] = useState([]);
+    const [zipName, setZipName] = useState("");
     const [fileSize, setFileSize] = useState(0);
     const MAX_SIZE = 10 * 1024 * 1024;
 
     CheckSession(setLoggedIn);
 
-    useEffect(() => {
-        if (loggedIn === "false") {
-            navigate("/");
-        }
-    }, [loggedIn, navigate]);
+//    useEffect(() => {
+//        if (loggedIn === "false") {
+//            navigate("/");
+//        }
+//    }, [loggedIn, navigate]);
 
     const handleClick = () => {
         fileInput.current.click();
@@ -69,7 +80,21 @@ const Home = () => {
         setFileSize(0);
     };
 
+    const handleZipSubmit = async () => {
+        try {
+            const zipFile = await createZip(file); // Await the zipped file
+            await handleFileUpload([zipFile]); // Upload the zip file as an array
+            alert("ZIP file uploaded successfully!");
+        } catch (error) {
+            console.error("Error during zip creation or upload:", error);
+        } finally {
+            setFile([]);
+            setFileSize(0);
+        }
+    };
+
     const handleFileSubmit = () => {
+        setFile(createZip(file));
         handleFileUpload(file);
         setFile([]);
         setFileSize(0);
@@ -99,10 +124,34 @@ const Home = () => {
                     <>
                         {fileSize < MAX_SIZE ? (
                             <>
-                                <Container className="selected-file">
-                                    <p>{file.length} file(s) selected</p>
-                                    <button onClick={handleFileSubmit}>Submit</button>
-                                    <button onClick={handleFileRemove}>Remove</button>
+                                <Container className="main-submission">
+
+                                    <Container className="separate-submission">
+
+                                        <p>Submit separately</p>
+                                        <Container className="d-flex flex-row justify-content-center align-items-center">
+                                            <p style={{paddingTop: "8px"}}>{file.length} file(s) selected</p>
+                                            <button onClick={handleFileSubmit}>Submit</button>
+                                            <button onClick={handleFileRemove}>Remove</button>
+                                        </Container>
+
+                                    </Container>
+                                    <p className="or">Or</p>
+                                    <Container className="zip-submission">
+
+                                         <p>Submit as a single .zip file</p>
+                                         <Container>
+                                             <input
+                                                 type="text"
+                                                 value={zipName}
+                                                 onChange={(e) => setZipName(e.target.value)}
+                                                 placeholder="Enter file name"
+                                             />
+                                             <button onClick={handleZipSubmit}>Submit Zip</button>
+                                         </Container>
+
+                                    </Container>
+
                                 </Container>
                             </>
                         ) : (
