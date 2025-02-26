@@ -166,11 +166,15 @@ img.upload-file-image{
 }
 
 .main-submission{
+    margin: 30px 0 0 0;
     color: white;
     display: flex;
     flex: row;
     font-size: 22px;
     gap: 10px;
+    border: solid 2px;
+    border-radius: 20px;
+        height: 292px;
 }
 
 .separate-submission,
@@ -178,7 +182,7 @@ img.upload-file-image{
     margin: auto;
     border: none;
     text-align: center;
-    margin: 0 auto 0 auto;
+    margin: auto;
 }
 
 .main-submission button {
@@ -186,22 +190,20 @@ img.upload-file-image{
     color: white;
     border: solid 2px;
     border-radius: 5px;
-    cursor: pointer;
-    padding: 5px;
+    padding: 5px 5px 8px 5px;
     margin: 5px;
 }
 
 .main-submission button:hover {
     background-color: white;
     color: black;
-    border: solid 2px;
-    border-radius: 5px;
-    cursor: pointer;
-    padding: 5px;
-    margin: 5px;
 }
 
--------------------------FOOTER-----------------------*/
+.or{
+    margin: auto;
+}
+
+/*-------------------------FOOTER-----------------------*/
 
 .footer {
     background-color: #000;
