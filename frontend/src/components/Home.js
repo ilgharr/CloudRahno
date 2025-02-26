@@ -38,13 +38,17 @@ const handleFileUpload = async (file) => {
     }
 };
 
+// removes .zip extension, this is to prevent fileName.zip.zip
+function removeZip(input) {
+  return input.endsWith(".zip") ? input.slice(0, -4) : input;
+}
+
 // given an array of files, returns a single .zip with files inside it
 const createZip = async (files, fileName) => {
-    const name = "hello";
     const zip = new JSZip();
     files.forEach((file) => {zip.file(file.name, file);});
     const zipBlob = await zip.generateAsync({ type: "blob" });
-    return new File([zipBlob], fileName, { type: "application/zip" });
+    return new File([zipBlob], removeZip(fileName)+".zip", { type: "application/zip" });
 }
 
 const Home = () => {
@@ -58,11 +62,11 @@ const Home = () => {
 
     CheckSession(setLoggedIn);
 
-//    useEffect(() => {
-//        if (loggedIn === "false") {
-//            navigate("/");
-//        }
-//    }, [loggedIn, navigate]);
+    useEffect(() => {
+        if (loggedIn === "false") {
+            navigate("/");
+        }
+    }, [loggedIn, navigate]);
 
     const handleClick = () => {
         fileInput.current.click();
@@ -82,8 +86,8 @@ const Home = () => {
 
     const handleZipSubmit = async () => {
         try {
-            const zipFile = await createZip(file); // Await the zipped file
-            await handleFileUpload([zipFile]); // Upload the zip file as an array
+            const zipFile = await createZip(file, zipName);
+            await handleFileUpload([zipFile]);
             alert("ZIP file uploaded successfully!");
         } catch (error) {
             console.error("Error during zip creation or upload:", error);
@@ -93,9 +97,8 @@ const Home = () => {
         }
     };
 
-    const handleFileSubmit = () => {
-        setFile(createZip(file));
-        handleFileUpload(file);
+    const handleFileSubmit = async () => {
+        await handleFileUpload(file);
         setFile([]);
         setFileSize(0);
     };

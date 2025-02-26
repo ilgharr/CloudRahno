@@ -190,24 +190,13 @@ img.upload-file-image{
     color: white;
     border: solid 2px;
     border-radius: 5px;
-    cursor: pointer;
-    padding: 5px;
-    padding-bottom: 8px;
+    padding: 5px 5px 8px 5px;
     margin: 5px;
 }
 
 .main-submission button:hover {
     background-color: white;
     color: black;
-    border: solid 2px;
-    border-radius: 5px;
-    cursor: pointer;
-    padding: 5px;
-    margin: 5px;
-}
-
-.zip-submission > input{
-    height: 50px;
 }
 
 .or{
