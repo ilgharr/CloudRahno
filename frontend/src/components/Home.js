@@ -40,7 +40,7 @@ const handleFileUpload = async (file) => {
 
 const handleFileDownload = async () => {
     try {
-        const response = await fetch(`/download`, { method: "GET", credentials: "include" });
+        const response = await fetch(`/download`, { method: "POST", credentials: "include" });
         if (response.ok) {
             console.log("Request successful:", response.status);
         } else {
@@ -49,19 +49,6 @@ const handleFileDownload = async () => {
     } catch (e) {
         console.error("Error communicating with backend:", e);
     }
-}
-
-// removes .zip extension, this is to prevent fileName.zip.zip
-const removeZipExtension = (input) => {
-  return input.endsWith(".zip") ? input.slice(0, -4) : input;
-}
-
-// given an array of files, returns a single .zip with files inside it
-const createZip = async (files, fileName) => {
-    const zip = new JSZip();
-    files.forEach((file) => {zip.file(file.name, file);});
-    const zipBlob = await zip.generateAsync({ type: "blob" });
-    return new File([zipBlob], removeZipExtension(fileName)+".zip", { type: "application/zip" });
 }
 
 const Home = () => {
@@ -97,44 +84,21 @@ const Home = () => {
         setFileSize(0);
     };
 
-//    const handleZipSubmit = async () => {
-//        try {
-//            const zipFile = await createZip(file, zipName);
-//            await handleFileUpload([zipFile]);
-//            alert("ZIP file uploaded successfully!");
-//        } catch (error) {
-//            console.error("Error during zip creation or upload:", error);
-//        } finally {
-//            setFile([]);
-//            setFileSize(0);
-//        }
-//    };
-
-
-/*
-<p className="or">Or</p>
-<Container className="zip-submission">
-     <p>Submit as a single .zip file</p>
-     <Container>
-         <input
-             type="text"
-             value={zipName}
-             onChange={(e) => setZipName(e.target.value)}
-             placeholder="Enter file name"
-         />
-         <button onClick={handleZipSubmit}>Submit Zip</button>
-     </Container>
-*/
     const handleFileSubmit = async () => {
         await handleFileUpload(file);
         setFile([]);
         setFileSize(0);
     };
 
+    const handleFileGet = async () => {
+        await handleFileDownload();
+    }
+
     return (
         <div>
             <HomeNavbar />
             <Container>
+            <button onClick={handleFileGet}>Download</button>
                 {file.length < 1 ? (
                     <Container className="upload-file" onClick={handleClick}>
                         <p>Drag and Drop Or Click to Select Files</p>
