@@ -1,0 +1,234 @@
+Security measures that will be implemented
+
+HTTPS
+Verify Referer or Origin header
+Restrict CORS policy
+Rate limiting
+server-generated request identifier
+AWS Cognito authentication
+
+
+
+### **Header Parameters**:
+1. **`kid`**: Key ID used to identify the public key for signature verification.
+2. **`alg`**: Algorithm used to sign the token (e.g., `RS256`).
+
+### **Payload Parameters**:
+#### **Standard Claims**:
+1. **`sub`**: Unique user ID in Cognito (`dc2dd5c8-8081-7054-447b-7dff1cfdcff7`).
+2. **`iss`**: Issuer of the token (your Cognito user pool URL).
+3. **`aud`**: The intended audience (your app's client ID).
+4. **`iat`**: Time when the token was issued (`1737144869`).
+5. **`exp`**: Time when the token expires (`1737145169`).
+
+#### **AWS Cognito-Specific Claims**:
+1. **`at_hash`**: Hash of the access token (for security).
+2. **`cognito:username`**: Cognito-specific unique username for the user.
+3. **`event_id`**: Unique ID for the authentication event.
+4. **`token_use`**: Indicates token purpose (`id` means this is an ID token).
+5. **`email_verified`**: True if the user's email is verified.
+6. **`auth_time`**: Time the user authenticated (`1737144869`).
+7. **`email`**: User's email address (`ilgharrahno115@gmail.com`).
+8. **`jti`**: Unique ID for this token (prevents reuse).
+9. **`origin_jti`**: ID of the original token (useful for tracing).
+
+### **Purpose**:
+- **Standard Claims** validate the token (expiry, issuer, intended recipient).
+- **Cognito-Specific Claims** provide user details (email, username, whether their email is verified).
+
+
+Checking AWS Cognito token validity
+ 1. **Signature**: Ensure the signature is valid using the correct public key (found via `kid`) to confirm the token wasn't tampered with and was issued by AWS Cognito.
+ 2. **Issuer (`iss`)**: Verify the token came from your Cognito User Pool.
+ 3. **Audience (`aud`)**: Confirm the token is meant for your application (matches your Client ID).
+ 4. **Token Use (`token_use`)**: Check the token's purpose (`id` or `access`).
+ 5. **Expiration (`exp`)**: Ensure the token hasn’t expired.
+ 6. **Issued At (`iat`)**: Confirm the token was issued at a reasonable time.
+
+| **Field**             | **Description**                               | **Type**       | **Details**                                        |
+|-----------------------|-----------------------------------------------|----------------|----------------------------------------------------|
+| **`at_hash`**         | Hash for validating the access token          | **Dynamic**    | Changes with each access token issued.             |
+| **`sub`**             | Unique user ID (subject)                      | **Permanent**  | Fixed identifier for the user across sessions.     | <--
+| **`email_verified`**  | Whether the email is verified                 | **Permanent**  | Remains constant unless verification changes.      |
+| **`iss`**             | Token issuer (Cognito Identity Pool)          | **Permanent**  | Fixed to the Cognito instance.                     |
+| **`cognito:username`**| Cognito username                              | **Permanent**  | Fixed identifier for the user within Cognito.      |
+| **`origin_jti`**      | Initial token’s unique identifier             | **Dynamic**    | Changes with each session or token issued.         |
+| **`aud`**             | Client/application ID                         | **Permanent**  | Fixed for the application linked to Cognito.       |
+| **`token_use`**       | Token's purpose (e.g., `id`, or `access`)     | **Dynamic**    | May vary, especially between ID and Access Tokens. |
+| **`auth_time`**       | Authentication timestamp                      | **Dynamic**    | Changes with each token, as it reflects login time.|
+| **`exp`**             | Token expiration timestamp                    | **Dynamic**    | Based on token lifetime, changes for every token.  | <--
+| **`iat`**             | Token issuance timestamp                      | **Dynamic**    | Shows creation time and changes with each token.   |
+| **`jti`**             | Unique token identifier                       | **Dynamic**    | Changes with every token issued.                   | <--
+| **`email`**           | User’s email address                          | **Permanent**  | Persists unless the user updates their email.      |
+
+React is a **client-side framework**. It runs entirely in the browser, and it only takes over routes when the browser requests your `index.html` (React app's entry point) and the React Router logic kicks in.
+However, if your **backend is handling the `/callback` route**, and it sends some kind of HTTP response directly to the browser instead of letting React render the component, the React app cannot load. Essentially:
+1. When the browser visits `/callback`, the server intercepts this route in its backend logic and **sends the response** (like JSON or HTML) directly.
+2. This response gets displayed in the browser, **bypassing React altogether**.
+
+NOTE: responding with Map<String, String>, spring boot will automatically convert it to json
+
+TO DO!!
+- Set the cookie with the following flags:
+    - **`HttpOnly`**: Prevents JavaScript from accessing the cookie.
+    - **`Secure`**: Ensures the cookie is sent only over HTTPS (even if working locally, this should be enforced in production).
+    - **`SameSite`**: Prevents cross-site attacks like CSRF (use `SameSite=Strict` unless you specifically need `Lax` behavior)
+
+- Match the cache entry’s lifespan with the actual token expiration OR reduce it slightly to allow buffer time.
+
+- On logout, remove the cached `user_id` and `access_token`. Otherwise, a stale token could still be accessed until the cache expires.
+
+1. **Login**: Store `refreshToken` in DB, `userID` in client cookie, and `userID` + `accessToken` in cache.
+2. **Logout**: Clear `refreshToken` (DB) and cache.
+3. **Access Endpoint**:
+    - Get `userID` from cookie.
+    - **If in cache**: Validate with `accessToken`.
+    - **If not in cache**: Use `refreshToken` (DB) to get a new `accessToken`, update cache.
+
+### **1xx: Informational**
+These indicate that the server received the request and is continuing the process.
+- **100 Continue**: The server has received the initial part of the request, and the client can continue with the remainder.
+- **101 Switching Protocols**: The server is switching to a different protocol, as requested by the client.
+- **102 Processing** _(WebDAV)_: The server is processing the request but no response is available yet.
+- **103 Early Hints**: Used to preload resources before the final HTTP response arrives.
+
+### **2xx: Success**
+These indicate that the action was successfully received, understood, and accepted.
+- **200 OK**: The standard response for a successful request.
+- **201 Created**: The request has been fulfilled, resulting in the creation of a new resource.
+- **202 Accepted**: The request has been received but is not yet processed.
+- **203 Non-Authoritative Information**: The returned meta-information is not from the origin server but a third-party copy.
+- **204 No Content**: The request was successful but there is no content to return.
+- **205 Reset Content**: The server successfully processed the request and asks the client to reset the document view.
+- **206 Partial Content**: The server is delivering parts of the resource as requested by the client (e.g., for range downloads).
+- **207 Multi-Status** _(WebDAV)_: Provides multiple status codes for multiple operations.
+- **208 Already Reported** _(WebDAV)_: The resource has already been reported in a previous response.
+- **226 IM Used** _(RFC 3229)_: The server fulfilled a request for the resource using delta encoding.
+
+### **3xx: Redirection**
+These codes indicate that further action is needed by the client to complete the request.
+- **300 Multiple Choices**: The request has multiple response options (e.g., different formats).
+- **301 Moved Permanently**: The resource has been permanently moved to a new URI.
+- **302 Found**: The resource resides temporarily at a different URI (commonly used in redirects).
+- **303 See Other**: The response must be retrieved using a different URI and a `GET` request.
+- **304 Not Modified**: The resource has not been modified since the last request (used for caching).
+- **305 Use Proxy** _(Obsolete)_: The resource must be accessed through a proxy (deprecated for security reasons).
+- **306 (Unused)**: Reserved for future use.
+- **307 Temporary Redirect**: The resource is temporarily located at a different URI but must use the same HTTP method (e.g., POST remains POST).
+- **308 Permanent Redirect**: Like `301`, but the HTTP method remains the same.
+
+### **4xx: Client Errors**
+These errors indicate problems with the request (e.g., invalid syntax, unauthorized access).
+- **400 Bad Request**: The server cannot process the request due to client error (e.g., malformed syntax).
+- **401 Unauthorized**: Authentication is required to access the resource but is missing or invalid.
+- **402 Payment Required** _(Experimental)_: Reserved for future use (e.g., digital payment systems).
+- **403 Forbidden**: The server understood the request but refuses to authorize it.
+- **404 Not Found**: The requested resource was not found on the server.
+- **405 Method Not Allowed**: The HTTP method is not supported for the requested resource.
+- **406 Not Acceptable**: The requested resource cannot generate acceptable content according to the "Accept" headers of the request.
+- **407 Proxy Authentication Required**: Authentication is required for a proxy.
+- **408 Request Timeout**: The client did not complete the request in time.
+- **409 Conflict**: The request conflicts with the current state of the target resource.
+- **410 Gone**: The resource is no longer available and has been permanently removed.
+- **411 Length Required**: The server requires a `Content-Length` header in the request.
+- **412 Precondition Failed**: One or more conditions in the request headers were not met.
+- **413 Payload Too Large**: The request entity (e.g., file size) is too large for the server to process.
+- **414 URI Too Long**: The request URI is longer than the server can interpret.
+- **415 Unsupported Media Type**: The request entity's media type is unsupported by the server.
+- **416 Range Not Satisfiable**: The range specified by the `Range` header is invalid for the resource.
+- **417 Expectation Failed**: The server cannot meet the requirements of the `Expect` header.
+- **418 I'm a Teapot** _(RFC 2324 / April Fools)_: A humorous status code indicating a teapot cannot brew coffee.
+- **421 Misdirected Request**: The request was directed at a server that cannot produce a response.
+- **422 Unprocessable Entity** _(WebDAV)_: The server understands the request, but it is semantically incorrect.
+- **423 Locked** _(WebDAV)_: The requested resource is locked.
+- **424 Failed Dependency** _(WebDAV)_: The resource cannot process the request because of a failed dependency.
+- **425 Too Early** _(RFC 8470)_: The server encourages the client to use caution before retrying a request.
+- **426 Upgrade Required**: The server refuses the request unless the client upgrades to another protocol.
+- **428 Precondition Required**: The server requires the request to be conditional to avoid conflicts.
+- **429 Too Many Requests**: The client has sent too many requests in a given timeframe (rate limiting).
+- **431 Request Header Fields Too Large**: The request header fields are too large for the server to process.
+- **451 Unavailable For Legal Reasons**: The server is denying access to the resource for legal reasons (e.g., restricted content).
+
+### **5xx: Server Errors**
+These codes indicate that the server failed to process a valid request.
+- **500 Internal Server Error**: A generic error indicating the server encountered an unexpected issue.
+- **501 Not Implemented**: The server does not support the functionality required to fulfill the request.
+- **502 Bad Gateway**: The server acting as a gateway got an invalid response from the upstream server.
+- **503 Service Unavailable**: The server is currently unavailable (e.g., overloaded or under maintenance).
+- **504 Gateway Timeout**: The server acting as a gateway didn’t get a timely response from the upstream server.
+- **505 HTTP Version Not Supported**: The server doesn’t support the HTTP protocol version used in the request.
+- **506 Variant Also Negotiates**: There is a circular reference in content negotiation for the resource.
+- **507 Insufficient Storage** _(WebDAV)_: The server doesn’t have enough space to complete the request.
+- **508 Loop Detected** _(WebDAV)_: The server detected an infinite loop while processing the request.
+- **510 Not Extended** _(RFC 2774)_: Further extensions to the request are required for the server to fulfill it.
+- **511 Network Authentication Required**: The client must authenticate to gain network access (used by proxies).
+
+In Java, the `final` keyword is used to enforce immutability or restriction in various contexts.
+When applied to variables, it prevents reassignment, making them constants. For methods,
+`final` ensures that they cannot be overridden in subclasses, and for classes,
+it prevents inheritance, locking the class structure. Unlike `const` in other languages,
+`final` does not make objects immutable, but only the reference cannot be changed.
+It can also be used with method parameters to prevent their reassignment within the method,
+offering more control over code behavior and preventing unintended modifications.
+
+CODE FOR LATER
+
+    const allowedFileSize = 20 * 1024 * 1024;
+    const allowedTypes = [
+        "application/zip", // ZIP
+        "application/x-7z-compressed", // 7Z
+        "application/x-rar-compressed", // RAR
+        "application/gzip", // GZIP
+        "application/x-tar", // TAR
+        "application/pdf", // PDF
+        "application/vnd.ms-powerpoint", // PPT
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation", // PPTX
+        "application/vnd.ms-excel", // XLS
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // XLSX
+        "application/vnd.oasis.opendocument.spreadsheet", // ODS
+        "text/csv", // CSV
+        "application/msword", // DOC
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // DOCX
+        "text/plain", // TXT
+        "text/html", // HTML
+        "text/css", // CSS
+        "application/xml", // XML
+        "application/json", // JSON
+        "application/javascript", // JavaScript files
+        "video/mp4", // MP4
+        "video/mpeg", // MPEG
+        "audio/mpeg", // MP3
+        "image/svg+xml", // SVG
+        "image/jpeg", // JPEG, JPG
+        "image/png", // PNG
+        "image/gif" // GIF
+    ];
+
+
+
+FUTURE WORK TO BE ADDED
+
+- Combine additional factors, such as IP or device binding, to invalidate tokens if they are used in suspicious environments.
+    This can be done with Device based cognito
+- Store a **refresh token bound to a specific session** (e.g., IP address, device fingerprint). If used from a different environment, invalidate it.
+    Device based cognito
+- Never trust the `userId` from the cookie alone. Always derive it from the refresh token during backend validation.
+    Validate refresh tokens and user id from with AWS
+    put cookies inside JWT and encrypt them
+- Use a signed/encrypted cookie mechanism (or JWT tokens) if you’re validating the cookie values directly.
+    JWT cookies
+- Implement **short-lived refresh tokens with rotation**.
+    AWS handles this
+- Use **token use limits** (e.g., allow only X refreshes per timeframe).
+    limit the number of times a refresh token can be used
+- Additionally, for further protection, generate and validate **anti-CSRF tokens (e.g., Synchronizer or Double Submit tokens)** for particular requests.
+    Encrypt the cookie values
+    put the cookie values inside the JWT to check if it has been tampered with
+- Add a CSP header to your server responses to block malicious scripts:
+- Consider AWS WAF
+
+### **How to sanitize inputs**
+1. **Use Libraries:** Use web frameworks that sanitize outputs for you:
+    - In Java, libraries like **OWASP Java Encoder** automatically escape dangerous characters.
+    - For frontends (JavaScript), libraries like **DOMPurify** remove harmful code.
+
