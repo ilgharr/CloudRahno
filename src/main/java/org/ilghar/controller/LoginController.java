@@ -93,25 +93,19 @@ public class LoginController {
         return ResponseEntity.status(HttpStatus.FOUND).headers(headers).build();
     }
 
-    // if a refresh_token exists in the cookie that means user is logged in
-    @GetMapping("/check-session")
-    public ResponseEntity<Map<String, String>> checkSession(@CookieValue(value = "refresh_token", required = false) String refresh_token){
-        return ResponseEntity.ok(Map.of("isLoggedIn", refresh_token != null ? "true" : "false"));
-    }
-
-    private String generateHttpOnlyCookie(String key, String value, int expiration) {
+    private static String generateHttpOnlyCookie(String key, String value, int expiration) {
         return String.format("%s=%s; HttpOnly; Path=/; Max-Age=%d; SameSite=Strict",
                 key, value, expiration);
     }
 
-    private ResponseEntity<Void> redirectTo(String url) {
+    private static ResponseEntity<Void> redirectTo(String url) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Location", url);
         return new ResponseEntity<>(headers, HttpStatus.FOUND);
     }
 
     // extract refresh token from the token recieved by aws after exchanging one time use code
-    public static String extractRefreshToken(Map<String, String> token_response) {
+    private static String extractRefreshToken(Map<String, String> token_response) {
         try {
             String refresh_token = token_response.get("refresh_token");
             if (refresh_token == null || refresh_token.isEmpty()) {
@@ -125,7 +119,7 @@ public class LoginController {
     }
 
     // code from successful user login is exchanged for AWS Cognito token
-    public static Map<String, String> exchangeCodeForTokens(String code) {
+    private static Map<String, String> exchangeCodeForTokens(String code) {
         RestTemplate rest_template = new RestTemplate();
 
         MultiValueMap<String, String> request_body = new LinkedMultiValueMap<>();

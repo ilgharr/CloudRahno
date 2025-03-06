@@ -2,12 +2,9 @@ package org.ilghar.controller;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.s3.model.ObjectListing;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.amazonaws.services.s3.model.*;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.ObjectMetadata;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,6 +24,7 @@ import java.io.IOException;
 import java.util.*;
 
 import org.ilghar.Secrets;
+import org.ilghar.controller.Utility;
 
 @RestController
 public class S3Controller {
@@ -50,18 +48,39 @@ public class S3Controller {
         System.out.println("Uploaded successfully: " + key);
     }
 
+    public Integer getNumberOfFiles(String user_id) {
+        // gets all object names, not the objects themselves
+        ListObjectsV2Result result = s3_client.listObjectsV2(Secrets.BUCKET_NAME, user_id + "/");
+        // gets a list containing information for each object, given the above list name
+        List<S3ObjectSummary> objects = result.getObjectSummaries();
+        // the length of the above list, AKA the number of objects user has
+        return objects.size();
+    }
+
+//    @GetMapping("/download")
+//    public ResponseEntity<List<MultipartFile>> downloadFiles(@CookieValue(value = "refresh_token", required = true) String refresh_token){
+//        if(refresh_token == null){
+//            System.out.println("User attempted access to /upload while logged out");
+//            HttpHeaders headers = new HttpHeaders();
+//            headers.set("Location", "/");
+//            return new ResponseEntity<>(headers, HttpStatus.FOUND);
+//        }
+//
+//        String user_id = extractUserId(getIdToken(refresh_token));
+//
+//        // download
+//    }
+
     @PostMapping("/upload")
     public ResponseEntity<String> handleFileUpload(@RequestParam("file") List<MultipartFile> files,
                                                    @CookieValue(value = "refresh_token", required = true) String refresh_token) {
 
-        if(refresh_token == null){
-            System.out.println("User attempted access to /upload while logged out");
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Location", "/");
-            return new ResponseEntity<>(headers, HttpStatus.FOUND);
+        ResponseEntity<?> session_response = Utility.validateUserSession(refresh_token);
+        if(session_response != null){
+            return (ResponseEntity<String>) session_response;
         }
 
-        String user_id = extractUserId(getIdToken(refresh_token));
+        String user_id = Utility.extractUserId(Utility.getIdToken(refresh_token));
 
         if (files == null || files.isEmpty()) {
             System.out.println("No files were uploaded.");
@@ -101,61 +120,6 @@ public class S3Controller {
         }
     }
 
-    public static Map<String, String> getIdToken(String refresh_token) {
-        System.out.println("Requesting ID token with refresh token...");
-        RestTemplate rest_template = new RestTemplate();
 
-        MultiValueMap<String, String> request_body = new LinkedMultiValueMap<>();
-        request_body.add("grant_type", "refresh_token");
-        request_body.add("client_id", Secrets.CLIENT_ID);
-        request_body.add("client_secret", Secrets.CLIENT_SECRET);
-        request_body.add("refresh_token", refresh_token);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-        try {
-            ResponseEntity<String> response = rest_template.postForEntity(
-                    Secrets.TOKEN_ENDPOINT, new HttpEntity<>(request_body, headers), String.class);
-
-            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                System.out.println("ID token successfully fetched.");
-                return new ObjectMapper().readValue(response.getBody(), new TypeReference<>() {
-                });
-            } else {
-                throw new HttpClientErrorException(response.getStatusCode(), "Token exchange failed.");
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Error while exchanging code for tokens", e);
-        }
-    }
-
-    public static String extractUserId(Map<String, String> token) {
-        try {
-            if (token == null || !token.containsKey("id_token")) {
-                throw new IllegalArgumentException("id_token is missing.");
-            }
-            String id_token = token.get("id_token");
-
-            String[] token_parts = id_token.split("\\.");
-            if (token_parts.length != 3) {
-                throw new IllegalArgumentException("Invalid id_token format.");
-            }
-
-            String payload = new String(Base64.getDecoder().decode(token_parts[1]));
-
-            int sub_start = payload.indexOf("\"sub\":\"") + 7;
-            int sub_end = payload.indexOf("\"", sub_start);
-
-            if (sub_start < 7 || sub_end == -1) {
-                throw new IllegalArgumentException("sub claim not found in id_token");
-            }
-
-            return payload.substring(sub_start, sub_end);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
 
 }
