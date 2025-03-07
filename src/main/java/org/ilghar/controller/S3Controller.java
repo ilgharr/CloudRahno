@@ -57,19 +57,10 @@ public class S3Controller {
         return objects.size();
     }
 
-//    @GetMapping("/download")
-//    public ResponseEntity<List<MultipartFile>> downloadFiles(@CookieValue(value = "refresh_token", required = true) String refresh_token){
-//        if(refresh_token == null){
-//            System.out.println("User attempted access to /upload while logged out");
-//            HttpHeaders headers = new HttpHeaders();
-//            headers.set("Location", "/");
-//            return new ResponseEntity<>(headers, HttpStatus.FOUND);
-//        }
-//
-//        String user_id = extractUserId(getIdToken(refresh_token));
-//
-//        // download
-//    }
+    @GetMapping("/get-obj-count")
+    public ResponseEntity<String> sendObjCount(@RequestParam(name = "user_id", required = true) String user_id) {
+        return ResponseEntity.ok(String.valueOf(getNumberOfFiles(user_id)));
+    }
 
     @PostMapping("/upload")
     public ResponseEntity<String> handleFileUpload(@RequestParam("file") List<MultipartFile> files,
@@ -119,7 +110,5 @@ public class S3Controller {
                     .body("Error processing file upload.");
         }
     }
-
-
-
+    
 }

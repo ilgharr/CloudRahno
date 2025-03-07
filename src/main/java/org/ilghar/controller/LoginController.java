@@ -5,15 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.*;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.http.HttpClient;
 import java.util.Map;
 
 import org.ilghar.Secrets;
@@ -71,6 +69,8 @@ public class LoginController {
         }
     }
 
+
+
     // this clears the cookie in the header by setting the expiration to 0
     @GetMapping("/logout")
     public ResponseEntity<Void> logout(@CookieValue(value = "refresh_token", required = true) String refresh_token) {
@@ -116,6 +116,21 @@ public class LoginController {
             e.printStackTrace();
             return null;
         }
+    }
+
+    // make a request to S3Controller at /get-obj-count to get the number of objects the user has
+    public Integer getNumberOfFiles(String user_id){
+        RestTemplate rest_template = new RestTemplate();
+        String endpoint = "http://localhost:8443/get-obj-count?user_id={user_id}";
+        String response = "";
+        try{
+            response = rest_template.getForObject(endpoint, String.class, user_id);
+            System.out.println("Response from the server: " + response);
+        }catch(Exception e){
+            System.err.println("Error occurred while making the GET request: " + e.getMessage());
+            return -1;
+        }
+        return Integer.parseInt(response);
     }
 
     // code from successful user login is exchanged for AWS Cognito token
