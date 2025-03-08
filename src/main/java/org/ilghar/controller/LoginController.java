@@ -15,13 +15,14 @@ import java.net.http.HttpClient;
 import java.util.Map;
 
 import org.ilghar.Secrets;
+import org.ilghar.controller.DownloadTracker;
 
 @RestController
 public class LoginController {
 
     @GetMapping("/login")
-    public ResponseEntity<Void> login(@CookieValue(value = "refresh_token", required = false) String refresh_token
-    ) throws IOException {
+    public ResponseEntity<Void> login(@CookieValue(value = "refresh_token", required = false) String refresh_token) throws IOException {
+
         // user is redirected to AWS Cognito Login/Signup page
         // responds with AWS login endpoint, client id, redirect uri and scope
 
@@ -59,6 +60,11 @@ public class LoginController {
             }
 
             String refresh_token = extractRefreshToken(token_response);
+
+            String user_id = Utility.extractUserId(Utility.getIdToken(refresh_token));
+            Integer n = getNumberOfFiles(user_id);
+            DownloadTracker.addUser(user_id, n);
+            System.out.println("User has " + n + " objects in storage.");
 
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.SET_COOKIE, generateHttpOnlyCookie("refresh_token", refresh_token,  428400));
@@ -121,7 +127,7 @@ public class LoginController {
     // make a request to S3Controller at /get-obj-count to get the number of objects the user has
     public Integer getNumberOfFiles(String user_id){
         RestTemplate rest_template = new RestTemplate();
-        String endpoint = "http://localhost:8443/get-obj-count?user_id={user_id}";
+        String endpoint = "http://localhost:8443/max-count?user_id={user_id}";
         String response = "";
         try{
             response = rest_template.getForObject(endpoint, String.class, user_id);

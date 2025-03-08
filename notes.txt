@@ -232,3 +232,11 @@ FUTURE WORK TO BE ADDED
     - In Java, libraries like **OWASP Java Encoder** automatically escape dangerous characters.
     - For frontends (JavaScript), libraries like **DOMPurify** remove harmful code.
 
+
+USAGE RULES
+Each account is bound to one ip address
+2gb of storage max for each account
+May not upload anything larger than 10mb at once
+Limited to 20 uploads per day
+
+exceptions, me

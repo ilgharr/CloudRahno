@@ -1,4 +1,5 @@
 src/main/java/org/ilghar/Secrets.java
+src/main/java/org/ilghar/controller/DownloadCount.txt
 frontend/node_modules
 uploads/*
 

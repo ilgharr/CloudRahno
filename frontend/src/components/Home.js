@@ -8,7 +8,6 @@ import JSZip from "jszip";
 
 const handleFileUpload = async (file) => {
     if (!file || file.length === 0) {
-//        alert("No file selected.");
         return;
     }
 
@@ -26,30 +25,41 @@ const handleFileUpload = async (file) => {
 
         if (response.ok) {
             const result = await response.text();
-//            alert("Files uploaded successfully!");
         } else {
             const errorMessage = await response.text();
             console.error("Error:", errorMessage);
-//            alert("An error occurred while uploading the file(s).");
         }
     } catch (error) {
         console.error("Error during file upload:", error);
-//        alert("An error occurred. Please try again.");
     }
 };
 
-const handleFileDownload = async () => {
-    try {
-        const response = await fetch(`/download`, { method: "POST", credentials: "include" });
-        if (response.ok) {
-            console.log("Request successful:", response.status);
-        } else {
-            console.error("Request failed with status:", response.status);
-        }
-    } catch (e) {
-        console.error("Error communicating with backend:", e);
-    }
-}
+//const handleFileDownload = async () => {
+//    try {
+//        const response = await fetch(`/download`, { method: "POST", credentials: "include" });
+//        if (response.ok) {
+//            console.log("Request successful:", response.status);
+//        } else {
+//            console.error("Request failed with status:", response.status);
+//        }
+//    } catch (e) {
+//        console.error("Error communicating with backend:", e);
+//    }
+//}
+
+//const getMaxCount = async () => {
+//        try {
+//            const response = await fetch(`/max-count`, { method: "GET", credentials: "include" });
+//            if (response.ok) {
+//                const data = await response.text();
+//                console.log("Request successful: Data received:", data);
+//            } else {
+//                console.error("Request failed with status:", response.status);
+//            }
+//        } catch (e) {
+//            console.error("Error communicating with backend:", e);
+//        }
+//}
 
 const Home = () => {
     const navigate = useNavigate();
@@ -98,7 +108,6 @@ const Home = () => {
         <div>
             <HomeNavbar />
             <Container>
-            <button onClick={handleFileGet}>Download</button>
                 {file.length < 1 ? (
                     <Container className="upload-file" onClick={handleClick}>
                         <p>Drag and Drop Or Click to Select Files</p>

@@ -57,10 +57,22 @@ public class S3Controller {
         return objects.size();
     }
 
-    @GetMapping("/get-obj-count")
-    public ResponseEntity<String> sendObjCount(@RequestParam(name = "user_id", required = true) String user_id) {
-        return ResponseEntity.ok(String.valueOf(getNumberOfFiles(user_id)));
+    // responds with the total number of objects the current user has in storage
+    @GetMapping("/max-count")
+    public ResponseEntity<String> sendObjCount(@RequestParam(value = "user_id", required = true) String user_id){
+        try {
+            String response = String.valueOf(getNumberOfFiles(user_id));
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error processing request: " + e.getMessage());
+        }
     }
+
+//    @GetMapping("/get-obj-count")
+//    public ResponseEntity<String> sendObjCount(@RequestParam(name = "user_id", required = true) String user_id) {
+//        return ResponseEntity.ok(String.valueOf(getNumberOfFiles(user_id)));
+//    }
 
     @PostMapping("/upload")
     public ResponseEntity<String> handleFileUpload(@RequestParam("file") List<MultipartFile> files,
