@@ -6,10 +6,9 @@ phases:
       - echo "Cleaning up old container..."
       - docker rm -f my-app-container 2>/dev/null || true
       - echo "Downloading Secrets.java from S3..."
-      - mkdir -p src/main/java/org/ilghar/controller/
-      - aws s3 cp s3://codepipelinestartertempla-codepipelineartifactsbuc-bd73oogfwokp/Secrets.java src/main/java/org/ilghar/controller/Secrets.java
+      - aws s3 cp s3://codepipelinestartertempla-codepipelineartifactsbuc-bd73oogfwokp/Secrets.java src/main/java/org/ilghar/Secrets.java
       - echo "Verifying Secrets.java existence..."
-      - ls -l src/main/java/org/ilghar/controller/
+      - ls -l src/main/java/org/ilghar/
   build:
     commands:
       - echo "Building Docker image..."
