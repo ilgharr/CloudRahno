@@ -31,6 +31,7 @@ This service leverages modern technologies, including **Java Spring Boot**, **Re
 
 - **Java Spring Boot**: Implements the backend REST APIs to handle file operations, user management, and integration with AWS services.
 - **React**: A dynamic and responsive frontend framework used to build the user-friendly web interface.
+- **AWS CodeBuild and CodePipeline** CI/CD Automation. Source -> Build -> Deploy -> Run
 - **Amazon Cognito**: Handles user authentication, including user sign-up, sign-in, and secure access tokens.
 - **Amazon S3**: Durable and scalable storage for user files.
 - **AWS EC2**: Hosts the backend APIs built with **Java Spring Boot** as well as the **React** frontend.

@@ -240,3 +240,5 @@ May not upload anything larger than 10mb at once
 Limited to 20 uploads per day
 
 exceptions, me
+
+CodeBuild stages
