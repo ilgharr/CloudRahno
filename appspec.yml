@@ -15,12 +15,20 @@ files:
     destination: /home/ec2-user/deployment/src/
 hooks:
   ApplicationStop:
-    - location: /dev/null
+    - location: scripts/noop_script.sh
+  DownloadApplication:
+    - location: scripts/noop_script.sh
   BeforeInstall:
     # Make scripts executable
     - location: "chmod +x /home/ec2-user/deployment/scripts/clean_previous_build.sh"
     - location: "chmod +x /home/ec2-user/deployment/scripts/run_build.sh"
+  Install:
+    - location: scripts/noop_script.sh
+  AfterInstall:
+    - location: scripts/noop_script.sh
   ApplicationStart:
     # Cleanup and run build
     - location: /home/ec2-user/deployment/scripts/clean_previous_build.sh
     - location: /home/ec2-user/deployment/scripts/run_build.sh
+  ValidateService:
+    - location: scripts/noop_script.sh
