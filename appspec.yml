@@ -19,9 +19,7 @@ hooks:
   DownloadBundle:
     - location: scripts/noop_script.sh
   BeforeInstall:
-    # Make scripts executable
-    - location: "chmod +x /home/ec2-user/deployment/scripts/clean_previous_build.sh"
-    - location: "chmod +x /home/ec2-user/deployment/scripts/run_build.sh"
+    - location: scripts/noop_script.sh
   Install:
     - location: scripts/noop_script.sh
   AfterInstall:

@@ -9,11 +9,12 @@ phases:
       - aws s3 cp s3://codepipelinestartertempla-codepipelineartifactsbuc-bd73oogfwokp/Secrets.java src/main/java/org/ilghar/Secrets.java
       - echo "Verifying Secrets.java existence..."
       - ls -l src/main/java/org/ilghar/
+      - chmod +x scripts/run_build.sh
+      - chmod +x scripts/chmod_script.sh
   build:
     commands:
       - echo "Building Docker image..."
       - docker build -t my-app:latest .
-
 artifacts:
   files:
     - "**/*"
