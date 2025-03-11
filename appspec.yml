@@ -16,7 +16,7 @@ files:
 hooks:
   ApplicationStop:
     - location: scripts/noop_script.sh
-  DownloadApplication:
+  DownloadBundle:
     - location: scripts/noop_script.sh
   BeforeInstall:
     # Make scripts executable
