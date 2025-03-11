@@ -25,7 +25,6 @@ hooks:
   AfterInstall:
     - location: scripts/noop_script.sh
   ApplicationStart:
-    # Cleanup and run build
     - location: /home/ec2-user/deployment/scripts/clean_previous_build.sh
     - location: /home/ec2-user/deployment/scripts/run_build.sh
   ValidateService:

@@ -1,2 +1,5 @@
-echo -e "#!/bin/bash\n\nexit 0" > scripts/noop_script.sh
-chmod +x scripts/noop_script.sh
+  echo "Debugging BeforeInstall step..."
+  echo "Current working directory: $(pwd)"
+  echo "Listing files in deployment archive:"
+  ls -al
+  exit 0
