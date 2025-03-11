@@ -2,6 +2,14 @@
 
 echo "Starting cleanup of previous deployment..."
 
+SPRING_PID=$(pgrep -f 'java -jar app.jar')
+if [ ! -z "$SPRING_PID" ]; then
+  echo "Stopping the current Spring Boot process..."
+  kill "$SPRING_PID"
+else
+  echo "No running Spring Boot process found."
+fi
+
 # stop and remove the old container if it exists
 if [ "$(docker ps -q -f name=my_app_container)" ]; then
   echo "Stopping the old container..."
