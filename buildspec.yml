@@ -13,11 +13,8 @@ phases:
     commands:
       - echo "Building Docker image..."
       - docker build -t my-app:latest .
-  post_build:
-    commands:
-      - echo "Running the Docker container..."
-      - docker run -p 8443:8443 --name my-app-container my-app:latest
 
 artifacts:
   files:
     - "**/*"
+    - discard-paths: no

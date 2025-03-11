@@ -1,0 +1,24 @@
+version: 0.0
+os: linux
+files:
+  - source: ./scripts/clean_previous_build.sh
+    destination: /home/ec2-user/deployment/scripts/
+  - source: ./scripts/run_build.sh
+    destination: /home/ec2-user/deployment/scripts/
+  - source: ./Dockerfile
+    destination: /home/ec2-user/deployment/
+  - source: ./frontend
+    destination: /home/ec2-user/deployment/frontend/
+  - source: ./pom.xml
+    destination: /home/ec2-user/deployment/
+  - source: ./src
+    destination: /home/ec2-user/deployment/src/
+hooks:
+  BeforeInstall:
+    # Make scripts executable
+    - location: "chmod +x /home/ec2-user/deployment/scripts/clean_previous_build.sh"
+    - location: "chmod +x /home/ec2-user/deployment/scripts/run_build.sh"
+  ApplicationStart:
+    # Cleanup and run build
+    - location: /home/ec2-user/deployment/scripts/clean_previous_build.sh
+    - location: /home/ec2-user/deployment/scripts/run_build.sh
