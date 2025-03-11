@@ -14,6 +14,8 @@ files:
   - source: ./src
     destination: /home/ec2-user/deployment/src/
 hooks:
+  ApplicationStop:
+    - location: /dev/null
   BeforeInstall:
     # Make scripts executable
     - location: "chmod +x /home/ec2-user/deployment/scripts/clean_previous_build.sh"
