@@ -5,12 +5,12 @@ echo "Starting cleanup of previous deployment..."
 # stop and remove the old container if it exists
 if [ "$(docker ps -q -f name=my_app_container)" ]; then
   echo "Stopping the old container..."
-  docker stop app_container
+  docker stop my_app_container
 fi
 
 if [ "$(docker ps -aq -f name=my_app_container)" ]; then
   echo "Removing the old container..."
-  docker rm app_container
+  docker rm my_app_container
 fi
 
 # remove the old image if it exists
