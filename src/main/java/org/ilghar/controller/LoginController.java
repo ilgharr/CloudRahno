@@ -26,10 +26,7 @@ public class LoginController {
         // user is redirected to AWS Cognito Login/Signup page
         // responds with AWS login endpoint, client id, redirect uri and scope
 
-        if(refresh_token != null){
-            System.out.println("User attempted access to /login while already logged in");
-            return redirectTo("/home");
-        }
+        //AWS will handle users that are already logged in
 
         String cognito_url = Secrets.AUTHORIZATION_ENDPOINT + "?" +
                 "client_id=" + Secrets.CLIENT_ID + "&" +
@@ -75,16 +72,16 @@ public class LoginController {
         }
     }
 
-
-
     // this clears the cookie in the header by setting the expiration to 0
     @GetMapping("/logout")
-    public ResponseEntity<Void> logout(@CookieValue(value = "refresh_token", required = true) String refresh_token) {
-        if(refresh_token == null){
+    public ResponseEntity<Void> logout(@CookieValue(value = "refresh_token", required = false) String refresh_token) {
+
+        if(Utility.validateUserSession(refresh_token) != null){
             System.out.println("User attempted access to /logout while already logged out");
             return redirectTo("/");
         }
-        System.out.println("User logged out successfully.");
+
+        DownloadTracker.removeUser(Utility.extractUserId(Utility.getIdToken(refresh_token)));
 
         String cognito_logout_url = String.format(
                 "%s?client_id=%s&logout_uri=%s",
