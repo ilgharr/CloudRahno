@@ -171,7 +171,7 @@ public class S3Controller {
                     inputStream.transferTo(outputStream);
                 }
             }
-
+            System.out.println("getting number of files the user has on S3 " + getNumberOfFiles(user_id));
             return ResponseEntity.ok("Files downloaded to: " + localDir.getAbsolutePath());
         } catch (Exception e) {
             System.err.println("Error during file download: " + e.getMessage());
