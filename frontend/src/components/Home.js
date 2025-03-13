@@ -16,7 +16,7 @@ const handleFileUpload = async (file) => {
     });
 
     try {
-        const response = await fetch("http://localhost:8443/upload", {
+        const response = await fetch(`/upload`, {
             method: "POST",
             credentials: "include",
             body: formData
