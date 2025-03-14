@@ -30,7 +30,6 @@ const Landing = () => {
                                 Additionally, there are many legal considerations associated with storing files online.
                             </p>
                             <p>Recruiters may request a temporary email and password. However, please be aware that all files uploaded will be visible to the developer.</p>
-                            <p>NOTE: Website still in the making, basic functionalities work but UI, code readability, and organization needs work.</p>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     <p>NOTE: Website still in the making, basic functionalities work but UI, code readability, and organization needs work.</p>
             </Container>
         </div>
     );

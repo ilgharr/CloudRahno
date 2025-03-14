@@ -33,49 +33,6 @@ const handleFileUpload = async (file) => {
     }
 };
 
-const handleFileDownload = async () => {
-    try {
-        const response = await fetch("http://localhost:8443/download", {
-            method: "POST",
-            credentials: "include"
-        });
-
-        if (!response.ok) {
-            const errorMessage = await response.text();
-            console.error("Error downloading files:", errorMessage);
-        } else {
-            console.log("Download request sent successfully.");
-        }
-    } catch (error) {
-        console.error("Error during file download:", error);
-    }
-};
-
-const parseMultipartFiles = (boundary, responseText) => {
-    const files = [];
-    const parts = responseText.split(`--${boundary}`); // Split the response into parts using the boundary
-    for (const part of parts) {
-        // Extract file headers and file content
-        const headersEndIndex = part.indexOf("\r\n\r\n");
-        if (headersEndIndex !== -1) {
-            const headersText = part.slice(0, headersEndIndex).trim();
-            const content = part.slice(headersEndIndex + 4).trim(); // File content
-            const filenameMatch = headersText.match(/filename="(.+?)"/); // Extract filename from headers
-
-            if (filenameMatch) {
-                const filename = filenameMatch[1];
-                const contentTypeMatch = headersText.match(/Content-Type: (.+)/);
-                const contentType = contentTypeMatch ? contentTypeMatch[1] : "application/octet-stream";
-
-                // Convert file content to a Blob
-                const blob = new Blob([content], { type: contentType });
-                files.push({ filename, blob });
-            }
-        }
-    }
-    return files;
-};
-
 const Home = () => {
     const navigate = useNavigate();
     const fileInput = useRef(null);
@@ -83,7 +40,6 @@ const Home = () => {
     const [file, setFile] = useState([]);
     const [zipName, setZipName] = useState("");
     const [fileSize, setFileSize] = useState(0);
-    const [downloadedFiles, setDownloadedFiles] = useState([]);
     const MAX_SIZE = 10 * 1024 * 1024;
 
     CheckSession(setLoggedIn);
@@ -155,7 +111,6 @@ const Home = () => {
                         )}
                     </>
                 )}
-                <button onClick={handleFileDownload}>Download</button>
             </Container>
         </div>
     );
