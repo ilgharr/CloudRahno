@@ -49,40 +49,9 @@ public class S3Controller {
         System.out.println("Uploaded successfully: " + key);
     }
 
-    public Integer getNumberOfFiles(String user_id) {
-        // gets all object names, not the objects themselves
-        ListObjectsV2Result result = s3_client.listObjectsV2(Secrets.BUCKET_NAME, user_id + "/");
-        // gets a list containing information for each object, given the above list name
-        List<S3ObjectSummary> objects = result.getObjectSummaries();
-        // the length of the above list, AKA the number of objects user has
-        return objects.size();
-    }
-
-    // responds with the total number of objects the current user has in storage
-    @GetMapping("/max-count")
-    public ResponseEntity<String> sendObjCount(@RequestParam(value = "user_id", required = true) String user_id){
-        try {
-            String response = String.valueOf(getNumberOfFiles(user_id));
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error processing request: " + e.getMessage());
-        }
-    }
-
-    @GetMapping("/curent-count")
-    public ResponseEntity<String> sendObjCurrentCount(@RequestParam(value = "user_id", required = true) String user_id){
-        try {
-            String response = String.valueOf(getNumberOfFiles(user_id));
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error processing request: " + e.getMessage());
-        }
-    }
     @PostMapping("/upload")
     public ResponseEntity<String> handleFileUpload(@RequestParam("file") List<MultipartFile> files,
-                                                   @CookieValue(value = "refresh_token", required = true) String refresh_token) {
+                                                   @CookieValue(value = "refresh_token", required = false) String refresh_token) {
 
         ResponseEntity<?> session_response = Utility.validateUserSession(refresh_token);
         if(session_response != null){
@@ -99,7 +68,6 @@ public class S3Controller {
         }
 
         StringBuilder result_message = new StringBuilder();
-        Integer counter = 0;
         try {
             for (MultipartFile file : files) {
                 if (!file.isEmpty() && file.getSize() <= MAX_FILE_SIZE) {
@@ -110,7 +78,6 @@ public class S3Controller {
                         uploadFile(user_id, file);
                         System.out.println("File uploaded successfully to S3: " + file_name);
                         result_message.append("File uploaded successfully to S3: ").append(file_name).append("\n");
-                        counter++;
                     } catch (Exception uploadError) {
                         System.err.println("Failed to upload file to S3: " + file_name);
                         result_message.append("Failed to upload file to S3: ").append(file_name).append("\n");
@@ -121,7 +88,6 @@ public class S3Controller {
                 }
             }
             System.out.println("File upload process completed.");
-            DownloadTracker.updateMaxCountByUserId(user_id, counter + DownloadTracker.getMaxCountByUserId(user_id));
             return ResponseEntity.ok(result_message.toString());
         } catch (Exception e) {
             System.err.println("An error occurred during file upload: " + e.getMessage());
@@ -131,52 +97,53 @@ public class S3Controller {
         }
     }
 
-    @PostMapping("/download")
-    public ResponseEntity<?> handleFileDownload(@CookieValue(value = "refresh_token", required = false) String refresh_token) {
+    public List<String> getDirectoryFiles(String user_id) {
+        return processS3Objects(user_id, S3ObjectSummary::getKey);
+    }
+
+    public long getDirectorySize(String user_id) {
+        return processS3Objects(user_id, S3ObjectSummary::getSize)
+                .stream()
+                .mapToLong(Long::longValue)
+                .sum();
+    }
+
+    private <T> List<T> processS3Objects(String user_id, java.util.function.Function<S3ObjectSummary, T> mapper) {
+        List<T> result_list = new ArrayList<>();
+
+        ListObjectsV2Request request = new ListObjectsV2Request()
+                .withBucketName(Secrets.BUCKET_NAME)
+                .withPrefix(user_id)
+                .withDelimiter("/");
+
+        ListObjectsV2Result result;
+
+        do {
+            result = s3_client.listObjectsV2(request);
+            for (S3ObjectSummary object_summary : result.getObjectSummaries()) {
+                result_list.add(mapper.apply(object_summary)); // Apply the desired operation
+            }
+            request.setContinuationToken(result.getNextContinuationToken());
+        } while (result.isTruncated());
+
+        return result_list;
+    }
+
+    @PostMapping("/check-test-user")
+    public ResponseEntity<Map<String, String>> handleGetFiles(@CookieValue(value = "refresh_token", required = false) String refresh_token) {
         ResponseEntity<?> session_response = Utility.validateUserSession(refresh_token);
-        if (session_response != null) {
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Location", "/logout");
-            return new ResponseEntity<>(headers, HttpStatus.FOUND);
+        if(session_response != null){
+            return (ResponseEntity<Map<String, String>>) session_response;
         }
+
         String user_id = Utility.extractUserId(Utility.getIdToken(refresh_token));
-        int start = DownloadTracker.getCurrentCount(user_id);
-        int end = start + 6;
-        DownloadTracker.incrementCurrentByUserId(user_id, 6);
 
-        try {
-            List<S3ObjectSummary> object_summaries = s3_client.listObjectsV2(new ListObjectsV2Request()
-                            .withBucketName(Secrets.BUCKET_NAME)
-                            .withPrefix(user_id + "/"))
-                    .getObjectSummaries();
+        if(Objects.equals(user_id, "dc2dd5c8-8081-7054-447b-7dff1cfdcff7")){
 
-            if (start >= object_summaries.size()) {
-                return ResponseEntity.badRequest().body("No files available for download.");
-            }
-            end = Math.min(end, object_summaries.size()); // Cap end to the size of available files
+            return ResponseEntity.ok(Map.of("isAllowed", "true"));
 
-            File localDir = new File("./downloadtest");
-            if (!localDir.exists() && !localDir.mkdirs()) {
-                System.err.println("Failed to create directory: " + localDir.getAbsolutePath());
-                return ResponseEntity.internalServerError().body("Could not create directory.");
-            }
-
-            for (int i = start; i < end; i++) {
-                String key = object_summaries.get(i).getKey();
-                S3Object s3_object = s3_client.getObject(new GetObjectRequest(Secrets.BUCKET_NAME, key));
-
-                try (S3ObjectInputStream inputStream = s3_object.getObjectContent();
-                     FileOutputStream outputStream = new FileOutputStream(
-                             new File(localDir, key.substring(key.lastIndexOf("/") + 1)))) {
-                    inputStream.transferTo(outputStream);
-                }
-            }
-            System.out.println("getting number of files the user has on S3 " + getNumberOfFiles(user_id));
-            return ResponseEntity.ok("Files downloaded to: " + localDir.getAbsolutePath());
-        } catch (Exception e) {
-            System.err.println("Error during file download: " + e.getMessage());
-            return ResponseEntity.internalServerError().body("Download failed. See logs for details.");
         }
+            return ResponseEntity.ok(Map.of("isAllowed", "false"));
     }
 
 }

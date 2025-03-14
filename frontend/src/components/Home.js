@@ -33,6 +33,28 @@ const handleFileUpload = async (file) => {
     }
 };
 
+// check if user is for testing only AND if the test directory has reached the max storage limit
+// true to proceed with uploading, false to prevent uploading
+const checkTestUser = async () => {
+    try {
+        const response = await fetch(`/check-test-user`, {
+            method: "POST",
+            credentials: "include",
+        });
+
+        if (response.ok) {
+            const result = await response.json(); // Assuming the response is JSON
+            return result.isAllowed === "true";
+        } else {
+            console.error("Error:", await response.text());
+            return false; // Explicitly return false on error
+        }
+    } catch (error) {
+        console.error("Error during file check:", error);
+        return false; // Ensure false is returned on exceptions
+    }
+};
+
 const Home = () => {
     const navigate = useNavigate();
     const fileInput = useRef(null);
@@ -67,11 +89,11 @@ const Home = () => {
     };
 
     const handleFileSubmit = async () => {
+    console.log("CHECKING TESTER ACCOUNT: " + await checkTestUser())
         await handleFileUpload(file);
         setFile([]);
         setFileSize(0);
     };
-
 
     return (
         <div>

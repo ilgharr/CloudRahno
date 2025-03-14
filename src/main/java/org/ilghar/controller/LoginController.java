@@ -58,10 +58,10 @@ public class LoginController {
 
             String refresh_token = extractRefreshToken(token_response);
 
-            String user_id = Utility.extractUserId(Utility.getIdToken(refresh_token));
-            Integer n = getNumberOfFiles(user_id);
-            DownloadTracker.addUser(user_id, n);
-            System.out.println("User has " + n + " objects in storage.");
+//            String user_id = Utility.extractUserId(Utility.getIdToken(refresh_token));
+//            Integer n = getNumberOfFiles(user_id);
+//            DownloadTracker.addUser(user_id, n);
+//            System.out.println("User has " + n + " objects in storage.");
 
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.SET_COOKIE, generateHttpOnlyCookie("refresh_token", refresh_token,  428400));
@@ -81,7 +81,7 @@ public class LoginController {
             return redirectTo("/");
         }
 
-        DownloadTracker.removeUser(Utility.extractUserId(Utility.getIdToken(refresh_token)));
+//        DownloadTracker.removeUser(Utility.extractUserId(Utility.getIdToken(refresh_token)));
 
         String cognito_logout_url = String.format(
                 "%s?client_id=%s&logout_uri=%s",
