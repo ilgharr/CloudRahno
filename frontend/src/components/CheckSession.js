@@ -9,7 +9,10 @@ const CheckSession = (setLoggedIn) => {
     useEffect(() => {
         (async () => {
             try {
-                const response = await fetch(`/check-session`, {method: "GET", credentials: "include"});
+                const response = await fetch(`/check-session`, {
+                    method: "GET",
+                    credentials: "include"
+                });
                 if (response.ok) {
                     const result = await response.json();
                     if (result.isLoggedIn === "true") {

@@ -1,8 +1,8 @@
-import React, {useState} from 'react';
+import React, {useState, memo} from 'react';
 import { Navbar } from 'react-bootstrap';
 import logo from '../assets/cloud_logo.png'
 
-const LandingNavbar =() => {
+const LandingNavbar = memo (() => {
     const handleLogin = () => {
         window.location.href = '/login';
     }
@@ -24,6 +24,6 @@ const LandingNavbar =() => {
 
         </Navbar>
     )
-}
+});
 
 export default LandingNavbar;

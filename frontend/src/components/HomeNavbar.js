@@ -1,8 +1,8 @@
-import React, {useState} from 'react';
+import React, {memo} from 'react';
 import { Navbar } from 'react-bootstrap';
 import logo from '../assets/cloud_logo.png'
 
-const HomeNavbar =() => {
+const HomeNavbar = memo(() => {
     const handleLogout = () => {
         window.location.href = '/logout';
     }
@@ -23,6 +23,6 @@ const HomeNavbar =() => {
             </button>
         </Navbar>
     )
-}
+});
 
 export default HomeNavbar;

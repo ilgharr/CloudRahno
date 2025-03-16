@@ -11,11 +11,9 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpClient;
 import java.util.Map;
 
 import org.ilghar.Secrets;
-import org.ilghar.controller.DownloadTracker;
 
 @RestController
 public class LoginController {
@@ -25,8 +23,8 @@ public class LoginController {
 
         // user is redirected to AWS Cognito Login/Signup page
         // responds with AWS login endpoint, client id, redirect uri and scope
-
         //AWS will handle users that are already logged in
+        // logging in more than once is not a problem
 
         String cognito_url = Secrets.AUTHORIZATION_ENDPOINT + "?" +
                 "client_id=" + Secrets.CLIENT_ID + "&" +
@@ -58,11 +56,6 @@ public class LoginController {
 
             String refresh_token = extractRefreshToken(token_response);
 
-//            String user_id = Utility.extractUserId(Utility.getIdToken(refresh_token));
-//            Integer n = getNumberOfFiles(user_id);
-//            DownloadTracker.addUser(user_id, n);
-//            System.out.println("User has " + n + " objects in storage.");
-
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.SET_COOKIE, generateHttpOnlyCookie("refresh_token", refresh_token,  428400));
             return ResponseEntity.ok().headers(headers).build();
@@ -80,8 +73,6 @@ public class LoginController {
             System.out.println("User attempted access to /logout while already logged out");
             return redirectTo("/");
         }
-
-//        DownloadTracker.removeUser(Utility.extractUserId(Utility.getIdToken(refresh_token)));
 
         String cognito_logout_url = String.format(
                 "%s?client_id=%s&logout_uri=%s",
@@ -119,21 +110,6 @@ public class LoginController {
             e.printStackTrace();
             return null;
         }
-    }
-
-    // make a request to S3Controller at /get-obj-count to get the number of objects the user has
-    public Integer getNumberOfFiles(String user_id){
-        RestTemplate rest_template = new RestTemplate();
-        String endpoint = "http://localhost:8443/max-count?user_id={user_id}";
-        String response = "";
-        try{
-            response = rest_template.getForObject(endpoint, String.class, user_id);
-            System.out.println("Response from the server: " + response);
-        }catch(Exception e){
-            System.err.println("Error occurred while making the GET request: " + e.getMessage());
-            return -1;
-        }
-        return Integer.parseInt(response);
     }
 
     // code from successful user login is exchanged for AWS Cognito token

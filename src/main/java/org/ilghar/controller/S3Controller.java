@@ -49,6 +49,8 @@ public class S3Controller {
         System.out.println("Uploaded successfully: " + key);
     }
 
+
+    // all responses handled by frontend
     @PostMapping("/upload")
     public ResponseEntity<String> handleFileUpload(@RequestParam("file") List<MultipartFile> files,
                                                    @CookieValue(value = "refresh_token", required = false) String refresh_token) {
@@ -60,6 +62,12 @@ public class S3Controller {
 
         String user_id = Utility.extractUserId(Utility.getIdToken(refresh_token));
 
+        if (!userHasSpace(user_id)) {
+            String errorMessage = "Not enough storage space available.";
+            System.err.println(errorMessage);
+            return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(errorMessage);
+        }
+
         if (files == null || files.isEmpty()) {
             System.out.println("No files were uploaded.");
             return ResponseEntity.badRequest().body("No files were uploaded.");
@@ -70,7 +78,7 @@ public class S3Controller {
         StringBuilder result_message = new StringBuilder();
         try {
             for (MultipartFile file : files) {
-                if (!file.isEmpty() && file.getSize() <= MAX_FILE_SIZE) {
+                if (true) {
                     String file_name = file.getOriginalFilename();
                     System.out.println("Processing file: " + file_name);
 
@@ -98,22 +106,13 @@ public class S3Controller {
     }
 
     public List<String> getDirectoryFiles(String user_id) {
-        return processS3Objects(user_id, S3ObjectSummary::getKey);
-    }
+        List<String> file_names = new ArrayList<>();
 
-    public long getDirectorySize(String user_id) {
-        return processS3Objects(user_id, S3ObjectSummary::getSize)
-                .stream()
-                .mapToLong(Long::longValue)
-                .sum();
-    }
-
-    private <T> List<T> processS3Objects(String user_id, java.util.function.Function<S3ObjectSummary, T> mapper) {
-        List<T> result_list = new ArrayList<>();
+        String prefix = user_id.endsWith("/") ? user_id : user_id + "/";
 
         ListObjectsV2Request request = new ListObjectsV2Request()
                 .withBucketName(Secrets.BUCKET_NAME)
-                .withPrefix(user_id)
+                .withPrefix(prefix)
                 .withDelimiter("/");
 
         ListObjectsV2Result result;
@@ -121,29 +120,74 @@ public class S3Controller {
         do {
             result = s3_client.listObjectsV2(request);
             for (S3ObjectSummary object_summary : result.getObjectSummaries()) {
-                result_list.add(mapper.apply(object_summary)); // Apply the desired operation
+                String full_key = object_summary.getKey();
+                if (!full_key.endsWith("/")) {
+                    String file_name = full_key.startsWith(prefix) ? full_key.substring(prefix.length()) : full_key;
+                    file_names.add(file_name);
+                }
+            }
+
+            request.setContinuationToken(result.getNextContinuationToken());
+
+        } while (result.isTruncated());
+
+        return file_names;
+    }
+
+    @GetMapping("/fetch-file-list")
+    public ResponseEntity<List<String>> fetchFileList(@CookieValue(value = "refresh_token", required = false) String refresh_token) {
+        ResponseEntity<?> session_response = Utility.validateUserSession(refresh_token);
+        if(session_response != null){
+            return (ResponseEntity<List<String>>) session_response;
+        }
+        String user_id = Utility.extractUserId(Utility.getIdToken(refresh_token));
+        List<String> file_list = getDirectoryFiles(user_id);
+        System.out.println("File list fetched: " + file_list);
+        return ResponseEntity.ok(file_list);
+    }
+
+    // check if the user is the test account
+    // this is to warn the user that files expire after 24 hours, and it is ONLY for TESTING!
+//    @GetMapping("/check-test-user")
+//    public ResponseEntity<Map<String, String>> checkForTestUser(@CookieValue(value = "refresh_token", required = false) String refresh_token) {
+//
+//        ResponseEntity<?> session_response = Utility.validateUserSession(refresh_token);
+//        if(session_response != null){
+//            return (ResponseEntity<Map<String, String>>) session_response;
+//        }
+//
+//        String user_id = Utility.extractUserId(Utility.getIdToken(refresh_token));
+//
+//        if(Objects.equals(user_id, "2c8d7508-b0b1-7064-6ec2-5bddfd3fe22c")){
+//            return ResponseEntity.ok(Map.of("isTestUser", "true"));
+//        }
+//            return ResponseEntity.ok(Map.of("isTestUser", "false"));
+//    }
+
+    public boolean userHasSpace(String user_id) {
+        long total_size = 0;
+
+        String prefix = user_id.endsWith("/") ? user_id : user_id + "/";
+
+        ListObjectsV2Request request = new ListObjectsV2Request()
+                .withBucketName(Secrets.BUCKET_NAME) // Replace with your bucket name
+                .withPrefix(prefix);
+
+        ListObjectsV2Result result;
+
+        do {
+            result = s3_client.listObjectsV2(request);
+            for (S3ObjectSummary object_summary : result.getObjectSummaries()) {
+                total_size += object_summary.getSize();
+
+                if (total_size >= 10_737_418_240L) {
+                    return false;
+                }
             }
             request.setContinuationToken(result.getNextContinuationToken());
         } while (result.isTruncated());
 
-        return result_list;
-    }
-
-    @PostMapping("/check-test-user")
-    public ResponseEntity<Map<String, String>> handleGetFiles(@CookieValue(value = "refresh_token", required = false) String refresh_token) {
-        ResponseEntity<?> session_response = Utility.validateUserSession(refresh_token);
-        if(session_response != null){
-            return (ResponseEntity<Map<String, String>>) session_response;
-        }
-
-        String user_id = Utility.extractUserId(Utility.getIdToken(refresh_token));
-
-        if(Objects.equals(user_id, "dc2dd5c8-8081-7054-447b-7dff1cfdcff7")){
-
-            return ResponseEntity.ok(Map.of("isAllowed", "true"));
-
-        }
-            return ResponseEntity.ok(Map.of("isAllowed", "false"));
+        return true;
     }
 
 }
