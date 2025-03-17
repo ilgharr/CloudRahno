@@ -2,6 +2,8 @@
 
 echo "Starting the deployment process..."
 
+
+
 # Navigate to the deployment directory
 cd /home/ec2-user/deployment
 
@@ -18,5 +20,9 @@ fi
 # Run the new Docker container
 echo "Running the new Docker container..."
 docker run --rm --name my_app_container -d -p 8443:8443 my_app:latest
+
+# Restart the httpd service
+echo "Restarting the httpd service..."
+sudo systemctl restart httpd
 
 echo "Deployment completed successfully!"

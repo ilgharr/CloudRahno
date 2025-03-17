@@ -146,24 +146,6 @@ public class S3Controller {
         return ResponseEntity.ok(file_list);
     }
 
-    // check if the user is the test account
-    // this is to warn the user that files expire after 24 hours, and it is ONLY for TESTING!
-//    @GetMapping("/check-test-user")
-//    public ResponseEntity<Map<String, String>> checkForTestUser(@CookieValue(value = "refresh_token", required = false) String refresh_token) {
-//
-//        ResponseEntity<?> session_response = Utility.validateUserSession(refresh_token);
-//        if(session_response != null){
-//            return (ResponseEntity<Map<String, String>>) session_response;
-//        }
-//
-//        String user_id = Utility.extractUserId(Utility.getIdToken(refresh_token));
-//
-//        if(Objects.equals(user_id, "2c8d7508-b0b1-7064-6ec2-5bddfd3fe22c")){
-//            return ResponseEntity.ok(Map.of("isTestUser", "true"));
-//        }
-//            return ResponseEntity.ok(Map.of("isTestUser", "false"));
-//    }
-
     public boolean userHasSpace(String user_id) {
         long total_size = 0;
 
@@ -190,4 +172,85 @@ public class S3Controller {
         return true;
     }
 
+    @GetMapping("/delete-file")
+    public ResponseEntity<String> deleteFile(@CookieValue(value = "refresh_token", required = false) String refresh_token,
+                                             @RequestParam(name = "fileName", required = false) String file) {
+        ResponseEntity<?> session_response = Utility.validateUserSession(refresh_token);
+        if (session_response != null) {
+            return (ResponseEntity<String>) session_response;
+        }
+
+        String user_id = Utility.extractUserId(Utility.getIdToken(refresh_token));
+
+        if (file == null || file.isEmpty()) {
+            return ResponseEntity.badRequest().body("File name must be provided.");
+        }
+
+        try {
+            String object_key = user_id + "/" + file;
+            s3_client.deleteObject(Secrets.BUCKET_NAME, object_key);
+            System.out.println("Deleting file: " + object_key);
+            return ResponseEntity.ok("File deleted successfully: " + object_key);
+        } catch (AmazonS3Exception e) {
+            if (e.getStatusCode() == 404) {
+                System.err.println("File not found: " + file);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("File not found: " + file);
+            }
+            System.err.println("S3 error while deleting file: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("S3 error while deleting file: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("An error occurred during file deletion: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred while deleting the file: " + file);
+        }
+    }
+
+    // NOTE spring boot automatically decodes the URI
+    @GetMapping("/download-file")
+    public ResponseEntity<?> downloadFile(@CookieValue(value = "refresh_token", required = false) String refresh_token,
+                                             @RequestParam(name = "fileName", required = false) String file) {
+        ResponseEntity<?> session_response = Utility.validateUserSession(refresh_token);
+        if (session_response != null) {
+            return (ResponseEntity<String>) session_response;
+        }
+
+        String user_id = Utility.extractUserId(Utility.getIdToken(refresh_token));
+
+        if (file == null || file.isEmpty()) {
+            return ResponseEntity.badRequest().body("File name must not be empty.");
+        }
+
+        try {
+            String object_key = user_id + "/" + file;
+            S3Object s3_object = s3_client.getObject(Secrets.BUCKET_NAME, object_key);
+            S3ObjectInputStream s3_object_input_stream = s3_object.getObjectContent();
+            ByteArrayResource resource = new ByteArrayResource(s3_object_input_stream.readAllBytes());
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file + "\"")
+                    .body(resource);
+
+        } catch (AmazonS3Exception s3Exception) {
+            if (s3Exception.getStatusCode() == 404) {
+                System.err.println("File not found in S3: " + file);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("File not found: " + file);
+            }
+            System.err.println("S3 error while fetching file: " + s3Exception.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error retrieving file from S3: " + s3Exception.getMessage());
+        } catch (IOException e) {
+            System.err.println("I/O error while processing file: " + file);
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("I/O error occurred while processing the file: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Error in downloadFile: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An unexpected error occurred while processing the request.");
+        }
+    }
 }

@@ -5,40 +5,8 @@ import { Container } from "react-bootstrap";
 import CheckSession from "./CheckSession";
 import HomeNavbar from "./HomeNavbar";
 import ListFiles from "./ListFiles";
-import UploadCloud from "../assets/cloud_upload.png";
+import SimplePopup from "./SimplePopup";
 
-const SimplePopup = ({ message, onClose }) => {
-    return (
-        <div style={popupStyle.overlay}>
-            <div style={popupStyle.container}>
-                <p>{message}</p>
-                <button onClick={onClose}>Close</button>
-            </div>
-        </div>
-    );
-};
-
-const popupStyle = {
-    overlay: {
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100%",
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        zIndex: 1000,
-    },
-    container: {
-        backgroundColor: "#fff",
-        padding: "20px",
-        borderRadius: "8px",
-        textAlign: "center",
-        boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-    },
-};
 
 const handleFileUpload = async (file, setUploadResponse) => {
     if (!file || file.length === 0) {
@@ -79,26 +47,6 @@ const handleFileUpload = async (file, setUploadResponse) => {
     }
 };
 
-const fetchFileList = async () => {
-    try{
-        const response = await fetch(`/fetch-file-list`, {
-            method: "GET",
-            credentials: "include",
-        });
-
-        if (response.ok){
-            const result = await response.json();
-            return Array.isArray(result) ? result : [];
-        } else {
-            console.error("Error:", await response.text());
-            return [];
-        }
-    } catch (error) {
-        console.error("Error during file check:", error);
-        return [];
-    }
-}
-
 const Home = () => {
     const location = useLocation();
     const navigate = useNavigate();
@@ -110,6 +58,7 @@ const Home = () => {
     const [file, setFile] = useState([]);                       // the file that is sent over API
     const fileInput = useRef(null);                             // this is file(s) the user selects from their computer
     const [loggedIn, setLoggedIn] = useState(null);             // tracks logged in session
+    const [updateList, setUpdateList] = useState(false);        // causes ListFiles to re render
 
     CheckSession(setLoggedIn);
 
@@ -121,7 +70,7 @@ const Home = () => {
 
     useEffect(() => {
         if (uploadResponse !== ""){
-            setShowPopup(true);     // useState
+            setShowPopup(true); // useState
         }
     }, [uploadResponse]);
 
@@ -131,22 +80,22 @@ const Home = () => {
 
     const handleFileChange = (event) => {
         const selectedFiles = Array.from(event.target.files);
-        setFile(selectedFiles);     // useState
+        setFile(selectedFiles); // useState
         const size = selectedFiles.reduce((acc, file) => acc + file.size, 0);
         setFileSize(size);
     };
 
     const handleFileRemove = () => {
-        setFile([]);            // useState
-        setFileSize(0);     // useState
+        setFile([]);    // useState
+        setFileSize(0); // useState
     };
 
     const handleFileSubmit = async () => {
-        await handleFileUpload(file, setUploadResponse); // useState
-        setFile([]);// useState
-        setFileSize(0);// useState
+        await handleFileUpload(file, setUploadResponse);    // useState
+        setUpdateList((prev) => !prev);                     // useState
+        setFile([]);                                        // useState
+        setFileSize(0);                                     // useState
     };
-
 
     return (
         <div>
@@ -194,7 +143,7 @@ const Home = () => {
                     </>
                 )}
             </Container>
-            <ListFiles/>
+            <ListFiles updateList={updateList}/>
         </div>
     );
 };
