@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "PORT=6969 react-scripts start",
-    "build": "react-scripts build && mvn -f ../pom.xml spring-boot:stop && mkdir -p ../src/main/resources/static && rm -rf ../src/main/resources/static/* && cp -r ./build/* ../src/main/resources/static/ && mvn -f ../pom.xml spring-boot:run",
+    "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
