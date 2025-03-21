@@ -1,5 +1,6 @@
 html, body, #root {
     width: 100%;
+    min-width: 720px;
     height: 100%;
     margin: 0;
     padding: 0;
@@ -77,29 +78,48 @@ html, body, #root {
 
 .logo-name-text{
     color: white;
+  font-family: "Anton", Arial, sans-serif;
+      font-weight: 400;
     font-size: 40px
 }
 
-.landing-page-info {
-  color: white;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  margin: 0;
-  padding: 0;
-  height: 200px;
-  text-align: center;
-}
+/*--------------------------------------------------------------------------*/
 
-.landing-page-info p{
-    font-size: 25px
-}
-
-.notice{
+div .landing-page-info {
     color: white;
+    height: auto;
+    min-width: 720px;
+    text-align: left;
+
+  font-family: "Anton", Arial, sans-serif;
+      font-weight: 400;
+    font-size: 40px;
+
 }
 
+
+/*--------------------------------------------------------------------------*/
+.features-usage{
+    color: white;
+    background-color: #171717;
+    height: 200px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.features-usage-content{
+    display:flex;
+  font-family: "Anton", Arial, sans-serif;    font-weight: 400;
+    font-style: normal;
+    font-size: 25px;
+    margin: 0 0 0 50px;
+}
+
+.usage{
+    margin: 0 0 0 50px;
+}
 /*--------------------------LOGOUT AND LOGIN BUTTON-----------------------*/
 
 button.logout-button,
