@@ -1,5 +1,6 @@
 html, body, #root {
     width: 100%;
+    min-width: 720px;
     height: 100%;
     margin: 0;
     padding: 0;
@@ -77,42 +78,49 @@ html, body, #root {
 
 .logo-name-text{
     color: white;
+    font-family: "Anton", sans-serif;
+    font-weight: 300;
     font-size: 40px
 }
 
+/*--------------------------------------------------------------------------*/
+
 .landing-page-info {
-  color: white;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  margin: 0 0 0 20px;
-  padding: 0;
-  height: 200px;
-}
-
-.landing-page-info p{
-    font-size: 25px
-}
-
-.notice{
-    margin: 40px 0 0 20px;
     color: white;
+    height: auto;
+    min-width: 720px;
+    text-align: left;
+
+    font-family: "Anton", sans-serif;
+    font-weight: 300;
+    font-size: 40px;
+
 }
 
+
+/*--------------------------------------------------------------------------*/
 .features-usage{
     color: white;
-    background-color: black;
+    background-color: #171717;
     height: 200px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.7);
     display: flex;
-    flex-direction: column;
     justify-content: center;
+    flex-direction: column;
 }
 
 .features-usage-content{
-    margin: 0 0 0 20px;
+    display:flex;
+    font-family: "Anton", sans-serif;
+    font-weight: 200;
+    font-style: normal;
+    font-size: 25px;
+    margin: 0 0 0 50px;
 }
 
-
+.usage{
+    margin: 0 0 0 50px;
+}
 /*--------------------------LOGOUT AND LOGIN BUTTON-----------------------*/
 
 button.logout-button,
