@@ -85,11 +85,9 @@ html, body, #root {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
-  margin: 0;
+  margin: 0 0 0 20px;
   padding: 0;
   height: 200px;
-  text-align: center;
 }
 
 .landing-page-info p{
@@ -97,8 +95,23 @@ html, body, #root {
 }
 
 .notice{
+    margin: 40px 0 0 20px;
     color: white;
 }
+
+.features-usage{
+    color: white;
+    background-color: black;
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.features-usage-content{
+    margin: 0 0 0 20px;
+}
+
 
 /*--------------------------LOGOUT AND LOGIN BUTTON-----------------------*/
 
