@@ -78,8 +78,7 @@ html, body, #root {
 
 .logo-name-text{
     color: white;
-  font-family: "Anton", Arial, sans-serif;
-      font-weight: 400;
+
     font-size: 40px
 }
 
@@ -90,15 +89,17 @@ div .landing-page-info {
     height: auto;
     min-width: 720px;
     text-align: left;
-
-  font-family: "Anton", Arial, sans-serif;
-      font-weight: 400;
     font-size: 40px;
-
 }
 
 
 /*--------------------------------------------------------------------------*/
+
+.features-usage{
+    background-color: #171717;
+    color: white;
+}
+/*
 .features-usage{
     color: white;
     background-color: #171717;
@@ -111,8 +112,7 @@ div .landing-page-info {
 
 .features-usage-content{
     display:flex;
-  font-family: "Anton", Arial, sans-serif;    font-weight: 400;
-    font-style: normal;
+
     font-size: 25px;
     margin: 0 0 0 50px;
 }
@@ -120,6 +120,7 @@ div .landing-page-info {
 .usage{
     margin: 0 0 0 50px;
 }
+*/
 /*--------------------------LOGOUT AND LOGIN BUTTON-----------------------*/
 
 button.logout-button,
