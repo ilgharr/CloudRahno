@@ -8,9 +8,8 @@ html, body, #root {
 }
 
 .nav-bar{
-    margin: 100px
     height: 80px;
-    background-color: black;
+    background-color: transparent;
 }
 
 
@@ -75,15 +74,49 @@ html, body, #root {
 
 .logo-name{
     color: white;
+    margin-top: 10px;
+      font-family: "Press Start 2P", system-ui;
+      font-weight: 400;
+      font-style: normal;
 }
 
 .logo-name-text{
     color: white;
-
     font-size: 40px
 }
 
+.landing-page-info{
+    color: white;
+    font-size: 40px;
+  padding: 20px;
+  font-family: "Rubik Mono One", monospace;
+  font-weight: 400;
+  font-style: normal;
+}
 
+.features-usage{
+    background-color: #171717;
+    box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.5);
+    color: white;
+    padding: 20px;
+      font-family: "Rubik Mono One", monospace;
+      font-weight: 400;
+      font-style: normal;
+}
+
+.features-usage-content{
+    display: flex;
+    flex-direction: row:
+}
+
+.usage{
+    margin: 0 0 0 80px;
+}
+
+.usage,
+.feature{
+    font-size: 25px;
+}
 /*--------------------------LOGOUT AND LOGIN BUTTON-----------------------*/
 
 button.logout-button,
@@ -119,6 +152,7 @@ button.login-button:hover {
 
 .upload-file{
     margin: 50px 0 0 0;
+    padding-top: 7px;
     border:solid 2px;
     border-color: white;
     border-radius: 5px;

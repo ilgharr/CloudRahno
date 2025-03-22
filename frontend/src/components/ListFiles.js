@@ -146,7 +146,7 @@ const ListFiles = ({ updateList }) => {
                         </div>
                     ))
                 ) : (
-                    <p>No files available</p>
+                    null
                 )}
             </div>
         </Container>

@@ -17,36 +17,34 @@ const Landing = () => {
     }, [loggedIn, navigate]);
 
 
-//            <Container className="landing-page-info">
-//                <p>Simple and Secure Cloud Storage for Everything You Need!
-//                <br/>
-//                Access your files anywhere, anytime. Safe, fast, and hassle-free</p>
-//            </Container>
-//
-//            <div className="features-usage">
-//                <Container className="features-usage-content">
-//                    <div className="feature">
-//                        <h2>Features</h2>
-//                        <ul>
-//                            <li>Upload</li>
-//                            <li>Download</li>
-//                            <li>Delete</li>
-//                        </ul>
-//                    </div>
-//                    <div className="usage">
-//                        <h2>Usage</h2>
-//                        <ul>
-//                            <li>10GB of storage</li>
-//                            <li>10MB Upload Size</li>
-//                            <li>Unlimited files</li>
-//                        </ul>
-//                    </div>
-//                </Container>
-//            </div>
-
     return (
         <div>
             <LandingNavbar/>
+                        <Container className="landing-page-info">
+                            <p>Cloud Storage for Everything You Need!</p>
+                        </Container>
+
+                        <div className="features-usage">
+                            <Container className="features-usage-content">
+                                <div className="feature">
+                                    <h2>Features</h2>
+                                    <ul>
+                                        <li>Upload</li>
+                                        <li>Download</li>
+                                        <li>Delete</li>
+                                    </ul>
+                                </div>
+                                <div className="usage">
+                                    <h2>Usage</h2>
+                                    <ul>
+                                        <li>10GB of storage</li>
+                                        <li>10MB Upload Size</li>
+                                        <li>Unlimited files</li>
+                                    </ul>
+                                </div>
+                            </Container>
+                        </div>
+
         </div>
     );
 };

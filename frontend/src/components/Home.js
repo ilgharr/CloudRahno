@@ -62,11 +62,11 @@ const Home = () => {
 
     CheckSession(setLoggedIn);
 
-    useEffect(() => {
-        if (loggedIn === "false") {
-            navigate("/");
-        }
-    }, [loggedIn, navigate]);
+//    useEffect(() => {
+//        if (loggedIn === "false") {
+//            navigate("/");
+//        }
+//    }, [loggedIn, navigate]);
 
     useEffect(() => {
         if (uploadResponse !== ""){
