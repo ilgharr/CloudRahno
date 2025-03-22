@@ -96,8 +96,12 @@ div .landing-page-info {
 /*--------------------------------------------------------------------------*/
 
 .features-usage{
-    background-color: #171717;
+    background-color: rgba(23, 23, 23, 1);
     color: white;
+    height: 200px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
 }
 /*
 .features-usage{
