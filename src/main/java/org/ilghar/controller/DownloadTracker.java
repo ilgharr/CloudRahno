@@ -2,6 +2,8 @@ package org.ilghar.controller;
 
 import java.io.*;
 
+
+// NOTICE!! this class is not used but will leave in for future!!!
 public class DownloadTracker {
 
     private static final File file = new File("src/main/java/org/ilghar/controller/DownloadCount.txt");
