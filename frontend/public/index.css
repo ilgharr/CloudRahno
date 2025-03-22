@@ -84,6 +84,7 @@ html, body, #root {
 
 /*--------------------------------------------------------------------------*/
 
+/*
 div .landing-page-info {
     color: white;
     height: auto;
@@ -91,18 +92,9 @@ div .landing-page-info {
     text-align: left;
     font-size: 40px;
 }
-
+*/
 
 /*--------------------------------------------------------------------------*/
-
-.features-usage{
-    background-color: rgba(153, 46, 46, 1);
-    color: white;
-    height: 200px;
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-}
 /*
 .features-usage{
     color: white;
@@ -297,7 +289,7 @@ button.login-button:hover {
 /*-------------------------FOOTER-----------------------*/
 
 .footer {
-    background-color: #000;
+    background-color: #171717;
     color: #fff;
     text-align: center;
     padding: 1rem;

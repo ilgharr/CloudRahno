@@ -47,21 +47,6 @@ const Landing = () => {
     return (
         <div>
             <LandingNavbar/>
-                <Container className="landing-page-info">
-                    <p>Simple and Secure Cloud Storage for Everything You Need!
-                    <br/>
-                    Access your files anywhere, anytime. Safe, fast, and hassle-free</p>
-                </Container>
-
-                <div className="features-usage">
-                    <h2>Features</h2>
-                    <ul>
-                        <li>Upload</li>
-                        <li>Download</li>
-                        <li>Delete</li>
-                    </ul>
-                </div>
-
         </div>
     );
 };
