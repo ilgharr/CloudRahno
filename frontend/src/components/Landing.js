@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import { Navbar, Container } from 'react-bootstrap';
+import { Container } from 'react-bootstrap';
 import LandingNavbar from './LandingNavbar'
 import { useNavigate } from 'react-router-dom';
 import CheckSession from './CheckSession'
@@ -14,7 +14,9 @@ const Landing = () => {
         if(loggedIn === "true"){
             navigate("/home");
         }
-    }, [loggedIn, navigate])
+    }, [loggedIn, navigate]);
+
+
 //            <Container className="landing-page-info">
 //                <p>Simple and Secure Cloud Storage for Everything You Need!
 //                <br/>
