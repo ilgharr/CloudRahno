@@ -24,7 +24,8 @@ import java.net.URI;
 import java.util.*;
 
 import org.ilghar.Secrets;
-import org.ilghar.controller.Utility;
+
+import static org.ilghar.controller.CookieController.validateUserSession;
 
 
 @RestController
@@ -55,12 +56,14 @@ public class S3Controller {
     public ResponseEntity<String> handleFileUpload(@RequestParam("file") List<MultipartFile> files,
                                                    @CookieValue(value = "refresh_token", required = false) String refresh_token) {
 
-        ResponseEntity<?> session_response = Utility.validateUserSession(refresh_token);
-        if(session_response != null){
-            return (ResponseEntity<String>) session_response;
+        String user_id = validateUserSession(refresh_token);
+        // if user_id is null it means the refresh token was invalid
+        // user should be redirected to /logout to expire the invalid cookie
+        if(user_id == null){
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Location", "/logout"); // Use the string directly
+            return new ResponseEntity<>(headers, HttpStatus.FOUND);
         }
-
-        String user_id = Utility.extractUserId(Utility.getIdToken(refresh_token));
 
         if (!userHasSpace(user_id)) {
             String errorMessage = "Not enough storage space available.";
@@ -136,11 +139,15 @@ public class S3Controller {
 
     @GetMapping("/fetch-file-list")
     public ResponseEntity<List<String>> fetchFileList(@CookieValue(value = "refresh_token", required = false) String refresh_token) {
-        ResponseEntity<?> session_response = Utility.validateUserSession(refresh_token);
-        if(session_response != null){
-            return (ResponseEntity<List<String>>) session_response;
+        String user_id = validateUserSession(refresh_token);
+        // if user_id is null it means the refresh token was invalid
+        // user should be redirected to /logout to expire the invalid cookie
+        if(user_id == null){
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Location", "/logout"); // Use the string directly
+            return new ResponseEntity<>(headers, HttpStatus.FOUND);
         }
-        String user_id = Utility.extractUserId(Utility.getIdToken(refresh_token));
+
         List<String> file_list = getDirectoryFiles(user_id);
         System.out.println("File list fetched: " + file_list);
         return ResponseEntity.ok(file_list);
@@ -175,12 +182,14 @@ public class S3Controller {
     @GetMapping("/delete-file")
     public ResponseEntity<String> deleteFile(@CookieValue(value = "refresh_token", required = false) String refresh_token,
                                              @RequestParam(name = "fileName", required = false) String file) {
-        ResponseEntity<?> session_response = Utility.validateUserSession(refresh_token);
-        if (session_response != null) {
-            return (ResponseEntity<String>) session_response;
+        String user_id = validateUserSession(refresh_token);
+        // if user_id is null it means the refresh token was invalid
+        // user should be redirected to /logout to expire the invalid cookie
+        if(user_id == null){
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Location", "/logout"); // Use the string directly
+            return new ResponseEntity<>(headers, HttpStatus.FOUND);
         }
-
-        String user_id = Utility.extractUserId(Utility.getIdToken(refresh_token));
 
         if (file == null || file.isEmpty()) {
             return ResponseEntity.badRequest().body("File name must be provided.");
@@ -211,12 +220,15 @@ public class S3Controller {
     @GetMapping("/download-file")
     public ResponseEntity<?> downloadFile(@CookieValue(value = "refresh_token", required = false) String refresh_token,
                                              @RequestParam(name = "fileName", required = false) String file) {
-        ResponseEntity<?> session_response = Utility.validateUserSession(refresh_token);
-        if (session_response != null) {
-            return (ResponseEntity<String>) session_response;
-        }
 
-        String user_id = Utility.extractUserId(Utility.getIdToken(refresh_token));
+        String user_id = validateUserSession(refresh_token);
+        // if user_id is null it means the refresh token was invalid
+        // user should be redirected to /logout to expire the invalid cookie
+        if(user_id == null){
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Location", "/logout"); // Use the string directly
+            return new ResponseEntity<>(headers, HttpStatus.FOUND);
+        }
 
         if (file == null || file.isEmpty()) {
             return ResponseEntity.badRequest().body("File name must not be empty.");

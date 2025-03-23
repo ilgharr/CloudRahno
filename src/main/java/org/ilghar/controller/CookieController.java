@@ -2,58 +2,84 @@ package org.ilghar.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.ilghar.Secrets;
 import org.springframework.http.*;
+import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
 import java.util.Base64;
 import java.util.Map;
+import java.util.Objects;
 
-@RestController
-public class Utility {
+@Component
+public class CookieController{
 
-    public static ResponseEntity<?> validateUserSession(String refresh_token) {
+    // cookie generated at login
+    // cookie expired at logout
+    // when user is redirected to /logout, their cookie expires
+    public static String generateHttpOnlyCookie(String key, String value, int expiration) {
 
-        // If the refresh token is null, redirect to the home page
-        if (refresh_token == null) {
-            System.out.println("User attempted access while logged out");
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Location", "/"); // Use the string directly
-            return new ResponseEntity<>(headers, HttpStatus.FOUND);
+        // this means we are expiring the cookie so no need for jwt
+        if (Objects.equals(value, "")){
+            return String.format("%s=%s; HttpOnly; Path=/; Max-Age=%d; SameSite=Strict",
+                    key, value, expiration);
         }
 
-        String user_id = Utility.extractUserId(Utility.getIdToken(refresh_token));
+        return String.format("%s=%s; HttpOnly; Path=/; Max-Age=%d; SameSite=Strict",
+                key, value, expiration);
+    }
 
-        // if user_id is null, it means the refresh token was not validated by aws
-        // redirect to /logout to expire the cookie that stores the refresh token
-        if (user_id == null) {
-            System.out.println("Invalid or expired refresh token. Redirecting to /logout.");
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Location", "/logout"); // Use the string directly
-            return new ResponseEntity<>(headers, HttpStatus.FOUND);
+    // each endpoint calls this
+    // if null is returned, the user is redirected to /logout to invalidate the false cookie
+    // if valid, user_id is returned
+    public static String validateUserSession(String refresh_token) {
+
+        // no refresh token return false
+        if (refresh_token == null) {
+            return null;
+        }
+
+//        String validated_refresh_token = validateJWT(refresh_token);
+//        if(validated_refresh_token == null){
+//            return null;
+//        }
+
+        // invalid id_token returns null
+        Map<String, String> id_token = getIdToken(refresh_token);
+        if(id_token == null){
+            return null;
+        }
+
+        String user_id = extractUserId(id_token);
+        if(user_id == null){
+            return null;
         }
 
         // on successful validation, null is returned
-        return null;
+        return user_id;
     }
 
-    // if a refresh_token exists in the cookie that means user is logged in
+    // this endpoint is called by frontend to check if user is logged in
+    // user is logged in if validateUserSession is not null
     @GetMapping("/check-session")
     public ResponseEntity<Map<String, String>> checkSession(@CookieValue(value = "refresh_token", required = false) String refresh_token){
-        ResponseEntity<?> sessionResponse = validateUserSession(refresh_token);
-        if (sessionResponse != null) {
+
+        String user_id = validateUserSession(refresh_token);
+        if (user_id == null) {
             return ResponseEntity.ok(Map.of("isLoggedIn", "false"));
         }
         return ResponseEntity.ok(Map.of("isLoggedIn", "true"));
     }
 
     // if aws does not validate the refresh token, null is returned
+    // else a Map<String, String> is returned as id_token: value
     public static Map<String, String> getIdToken(String refresh_token) {
         System.out.println("Requesting ID token with refresh token...");
         RestTemplate restTemplate = new RestTemplate();
@@ -73,6 +99,7 @@ public class Utility {
 
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 System.out.println("ID token successfully fetched.");
+
                 return new ObjectMapper().readValue(response.getBody(), new TypeReference<Map<String, String>>() {});
             } else {
                 System.out.println("AWS token exchange failed with status: " + response.getStatusCode());

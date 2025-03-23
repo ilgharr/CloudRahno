@@ -57,7 +57,7 @@ public class LoginController {
             String refresh_token = extractRefreshToken(token_response);
 
             HttpHeaders headers = new HttpHeaders();
-            headers.add(HttpHeaders.SET_COOKIE, generateHttpOnlyCookie("refresh_token", refresh_token,  428400));
+            headers.add(HttpHeaders.SET_COOKIE, CookieController.generateHttpOnlyCookie("refresh_token", refresh_token,  428400));
             return ResponseEntity.ok().headers(headers).build();
 
         } catch (Exception e) {
@@ -69,11 +69,6 @@ public class LoginController {
     @GetMapping("/logout")
     public ResponseEntity<Void> logout(@CookieValue(value = "refresh_token", required = false) String refresh_token) {
 
-        if(Utility.validateUserSession(refresh_token) != null){
-            System.out.println("User attempted access to /logout while already logged out");
-            return redirectTo("/");
-        }
-
         String cognito_logout_url = String.format(
                 "%s?client_id=%s&logout_uri=%s",
                 Secrets.LOGOUT_ENDPOINT,
@@ -82,14 +77,9 @@ public class LoginController {
         );
 
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.SET_COOKIE, generateHttpOnlyCookie("refresh_token", "",  0));
+        headers.add(HttpHeaders.SET_COOKIE, CookieController.generateHttpOnlyCookie("refresh_token", "",  0));
         headers.setLocation(URI.create(cognito_logout_url));
         return ResponseEntity.status(HttpStatus.FOUND).headers(headers).build();
-    }
-
-    private static String generateHttpOnlyCookie(String key, String value, int expiration) {
-        return String.format("%s=%s; HttpOnly; Path=/; Max-Age=%d; SameSite=Strict",
-                key, value, expiration);
     }
 
     private static ResponseEntity<Void> redirectTo(String url) {
@@ -98,6 +88,7 @@ public class LoginController {
         return new ResponseEntity<>(headers, HttpStatus.FOUND);
     }
 
+    // this is specifically for the initial aws login
     // extract refresh token from the token recieved by aws after exchanging one time use code
     private static String extractRefreshToken(Map<String, String> token_response) {
         try {
