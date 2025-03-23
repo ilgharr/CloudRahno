@@ -10,6 +10,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
@@ -18,19 +19,13 @@ import java.util.Base64;
 import java.util.Map;
 import java.util.Objects;
 
-@Component
+@RestController
 public class CookieController{
 
     // cookie generated at login
     // cookie expired at logout
     // when user is redirected to /logout, their cookie expires
     public static String generateHttpOnlyCookie(String key, String value, int expiration) {
-
-        // this means we are expiring the cookie so no need for jwt
-        if (Objects.equals(value, "")){
-            return String.format("%s=%s; HttpOnly; Path=/; Max-Age=%d; SameSite=Strict",
-                    key, value, expiration);
-        }
 
         return String.format("%s=%s; HttpOnly; Path=/; Max-Age=%d; SameSite=Strict",
                 key, value, expiration);
@@ -56,22 +51,27 @@ public class CookieController{
         if(id_token == null){
             return null;
         }
+//        System.out.println("ID TOKEN: " + id_token);
+
 
         String user_id = extractUserId(id_token);
         if(user_id == null){
             return null;
         }
+//        System.out.println("USER ID: " + user_id);
 
         // on successful validation, null is returned
         return user_id;
     }
 
-    // this endpoint is called by frontend to check if user is logged in
+    // this endpoint is called by frontend to check if user is logged
     // user is logged in if validateUserSession is not null
     @GetMapping("/check-session")
     public ResponseEntity<Map<String, String>> checkSession(@CookieValue(value = "refresh_token", required = false) String refresh_token){
+        System.out.println("CHECK-SESSION WAS CALLED!!!!!!!!!!!!!!!!!!!!!");
 
         String user_id = validateUserSession(refresh_token);
+        System.out.println("CHECK-SESSION USER ID: " + user_id);
         if (user_id == null) {
             return ResponseEntity.ok(Map.of("isLoggedIn", "false"));
         }
