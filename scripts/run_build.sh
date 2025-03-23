@@ -2,6 +2,9 @@
 
 ERROR_LOG="run_build_error"
 
+# The file takes up a lot of space
+rm -f "$ERROR_LOG"
+
 echo "Starting the deployment process..."
 
 # Navigate to the deployment directory
