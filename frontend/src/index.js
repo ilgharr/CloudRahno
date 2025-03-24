@@ -9,7 +9,7 @@ root.render(
         <App />
     </BrowserRouter>
 );
-
+// && mvn -f ../pom.xml spring-boot:stop && mkdir -p ../src/main/resources/static && rm -rf ../src/main/resources/static/* && cp -r ./build/* ../src/main/resources/static/ && mvn -f ../pom.xml spring-boot:run
 /*
 * Cats are territorial
 * So, when a door gets shut, they feel as if their boundaries aren't being respected,

@@ -20,31 +20,30 @@ const Landing = () => {
     return (
         <div>
             <LandingNavbar/>
-                        <Container className="landing-page-info">
-                            <p>Cloud Storage for Everything You Need!</p>
-                        </Container>
+                <Container className="landing-page-info typewriter">
+                    <p>Cloud Storage for all your needs!</p>
+                </Container>
 
-                        <div className="features-usage">
-                            <Container className="features-usage-content">
-                                <div className="feature">
-                                    <h2>Features</h2>
-                                    <ul>
-                                        <li>Upload</li>
-                                        <li>Download</li>
-                                        <li>Delete</li>
-                                    </ul>
-                                </div>
-                                <div className="usage">
-                                    <h2>Usage</h2>
-                                    <ul>
-                                        <li>10GB of storage</li>
-                                        <li>10MB Upload Size</li>
-                                        <li>Unlimited files</li>
-                                    </ul>
-                                </div>
-                            </Container>
+                <div className="features-usage">
+                    <Container className="features-usage-content">
+                        <div className="feature">
+                            <h2>Features</h2>
+                            <ul>
+                                <li>Upload</li>
+                                <li>Download</li>
+                                <li>Delete</li>
+                            </ul>
                         </div>
-
+                        <div className="usage">
+                            <h2>Usage</h2>
+                            <ul>
+                                <li>10GB of storage</li>
+                                <li>10MB Upload Size</li>
+                                <li>Unlimited files</li>
+                            </ul>
+                        </div>
+                    </Container>
+                </div>
         </div>
     );
 };

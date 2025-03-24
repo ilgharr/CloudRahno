@@ -63,6 +63,16 @@ const Home = () => {
     CheckSession(setLoggedIn);
 
     useEffect(() => {
+        setUploadResponse(
+            "NOTICE!<br />" +
+            "All uploaded content will be automatically deleted after 24 hours.<br />" +
+            "Please be aware that content may be visible to the developer.<br />" +
+            "This website is intended solely for showcasing development skills."
+        );
+        setShowPopup(true);
+    },[]);
+
+    useEffect(() => {
         if (loggedIn === "false") {
             navigate("/");
         }

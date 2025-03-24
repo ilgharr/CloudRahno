@@ -6,32 +6,27 @@ import com.amazonaws.services.s3.model.*;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
 import org.springframework.http.*;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.net.URI;
 import java.util.*;
 
 import org.ilghar.Secrets;
-
 import static org.ilghar.controller.CookieController.validateUserSession;
 
 
 @RestController
 public class S3Controller {
 
-    final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+    // this can be used for single point of access to /s3
+//    @RequestMapping("/s3")
+//    @ModelAttribute
+//    public void logRequest(@CookieValue(value = "refresh_token", required = false) String refresh_token, WebRequest webRequest) {
+//        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!"+refresh_token);
+//    }
 
     private final AmazonS3 s3_client = AmazonS3ClientBuilder.standard()
             .withRegion(Secrets.BUCKET_REGION)
@@ -49,7 +44,6 @@ public class S3Controller {
         s3_client.putObject(Secrets.BUCKET_NAME, key, file.getInputStream(), metadata);
         System.out.println("Uploaded successfully: " + key);
     }
-
 
     // all responses handled by frontend
     @PostMapping("/upload")
@@ -81,7 +75,7 @@ public class S3Controller {
         StringBuilder result_message = new StringBuilder();
         try {
             for (MultipartFile file : files) {
-                if (true) {
+                if (!file.isEmpty() && file.getSize() <= 10 * 1024 * 1024) {
                     String file_name = file.getOriginalFilename();
                     System.out.println("Processing file: " + file_name);
 

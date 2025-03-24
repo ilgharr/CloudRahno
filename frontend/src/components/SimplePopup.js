@@ -4,7 +4,7 @@ const SimplePopup = ({ message, onClose }) => {
     return (
         <div className="popup-overlay">
             <div className="popup-container">
-                <p>{message}</p>
+                <div dangerouslySetInnerHTML={{ __html: message }} />
                 <button onClick={onClose}>Close</button>
             </div>
         </div>

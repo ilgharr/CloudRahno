@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.ilghar.Secrets;
 import org.springframework.http.*;
-import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -14,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
 import java.util.Base64;
 import java.util.Map;
 import java.util.Objects;
@@ -22,45 +20,41 @@ import java.util.Objects;
 @RestController
 public class CookieController{
 
-    // cookie generated at login
-    // cookie expired at logout
-    // when user is redirected to /logout, their cookie expires
     public static String generateHttpOnlyCookie(String key, String value, int expiration) {
 
+        // this is for expiring the cookie
+        // no need to create a jwt for expiring cookies
+        if(Objects.equals(value, "")){
+            return String.format("%s=%s; HttpOnly; Path=/; Max-Age=%d; SameSite=Strict",
+                    key, value, expiration);
+        }
+
         return String.format("%s=%s; HttpOnly; Path=/; Max-Age=%d; SameSite=Strict",
-                key, value, expiration);
+                key, JWTHandler.createJwt(value, expiration), expiration);
     }
 
     // each endpoint calls this
     // if null is returned, the user is redirected to /logout to invalidate the false cookie
     // if valid, user_id is returned
-    public static String validateUserSession(String refresh_token) {
+    public static String validateUserSession(String jwt) {
 
-        // no refresh token return false
-        if (refresh_token == null) {
-            return null;
-        }
+        // if jwt is null or invalid
+        if(jwt == null || !JWTHandler.isJwtValid(jwt)){return null;}
+        else{System.out.println("JWT is valid.");}
 
-//        String validated_refresh_token = validateJWT(refresh_token);
-//        if(validated_refresh_token == null){
-//            return null;
-//        }
+        // extract refresh token from jwt
+        String refresh_token = JWTHandler.getValueFromJwt(jwt);
+        if (refresh_token == null) {return null;}
 
-        // invalid id_token returns null
+        // retrieve id token using refresh token
         Map<String, String> id_token = getIdToken(refresh_token);
-        if(id_token == null){
-            return null;
-        }
-//        System.out.println("ID TOKEN: " + id_token);
+        if(id_token == null){return null;}
 
-
+        // extract user id from id token
         String user_id = extractUserId(id_token);
-        if(user_id == null){
-            return null;
-        }
-//        System.out.println("USER ID: " + user_id);
+        if(user_id == null){return null;}
 
-        // on successful validation, null is returned
+        // on successful validation, user id is returned
         return user_id;
     }
 
@@ -68,10 +62,8 @@ public class CookieController{
     // user is logged in if validateUserSession is not null
     @GetMapping("/check-session")
     public ResponseEntity<Map<String, String>> checkSession(@CookieValue(value = "refresh_token", required = false) String refresh_token){
-        System.out.println("CHECK-SESSION WAS CALLED!!!!!!!!!!!!!!!!!!!!!");
 
         String user_id = validateUserSession(refresh_token);
-        System.out.println("CHECK-SESSION USER ID: " + user_id);
         if (user_id == null) {
             return ResponseEntity.ok(Map.of("isLoggedIn", "false"));
         }
@@ -114,7 +106,8 @@ public class CookieController{
         }
     }
 
-    // if given token is null, it means aws did not validate te token and so null is returned again
+    // given and id token from aws, user id is returned
+    // null for invalid id token or
     public static String extractUserId(Map<String, String> token) {
         try {
 
@@ -150,4 +143,5 @@ public class CookieController{
             return null;
         }
     }
+
 }
