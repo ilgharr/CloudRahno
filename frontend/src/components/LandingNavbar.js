@@ -14,9 +14,13 @@ const LandingNavbar = memo (() => {
                 <img src={logo} alt="Brand Logo" className="logo-image" />
             </Navbar.Brand>
 
-            <Navbar.Brand  className="logo-name">
-               <h1 className="logo-name-text">CloudRahno</h1>
-            </Navbar.Brand>
+<Navbar.Brand className="logo-name">
+    <a href="https://github.com/ilgharr/CloudRahno" class="logo-link" target="_blank" rel="noopener noreferrer">
+        <h1 className="logo-name-text">CloudRahno</h1>
+    </a>
+    <span class="moving-arrow">⬅</span>
+    <span class="github-text">GitHub</span>
+</Navbar.Brand>
 
             <button className="login-button" onClick={handleLogin}>
                 Get Started
