@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom"
-import LoadingScreen from "./LoadingScreen";
 
 // file name is encoded for safety
 // certain characters may cause issues
@@ -18,7 +17,7 @@ const callbackApi = async (code) => {
         }
     } catch (e) {
         console.error("Error communicating with backend:", e);
-            return false;
+        return false;
     }
 };
 
@@ -45,13 +44,12 @@ const Callback = () => {
             }
 
             navigate("/home");
-
         };
 
         executeTasks();
     }, [location, navigate]);
 
-    return <LoadingScreen />;
+    return null;
 };
 
 export default Callback;

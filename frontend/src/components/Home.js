@@ -48,7 +48,7 @@ const handleFileUpload = async (file, setUploadResponse) => {
 };
 
 const Home = () => {
-    const location = useLocation();
+    const location = useLocation(); // not used
     const navigate = useNavigate();
     const MAX_SIZE = 10 * 1024 * 1024;
 
@@ -65,8 +65,8 @@ const Home = () => {
     useEffect(() => {
         setUploadResponse(
             "NOTICE!<br />" +
-            "All uploaded content will be automatically deleted after 24 hours.<br />" +
-            "Please be aware that content may be visible to the developer.<br />" +
+            "All uploaded content will be automatically deleted after 24 hours." +
+            "Please be aware that content may be visible to the developer." +
             "This website is intended solely for showcasing development skills."
         );
         setShowPopup(true);

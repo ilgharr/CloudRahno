@@ -4,6 +4,10 @@ ERROR_LOG="clean_build_error"
 
 echo "Starting cleanup of previous deployment..."
 
+echo "Stopping httpd service..."
+sudo systemctl stop httpd 2>>"$ERROR_LOG"
+
+
 SPRING_PID=$(pgrep -f 'java -jar app.jar')
 if [ ! -z "$SPRING_PID" ]; then
   echo "Stopping the current Spring Boot process..."
@@ -32,5 +36,7 @@ fi
 # clean dangling resources
 echo "Pruning unused Docker resources..."
 docker system prune -f 2>>"$ERROR_LOG"
-
+# Start httpd after cleanup
+echo "Starting httpd service..."
+sudo systemctl start httpd 2>>"$ERROR_LOG"
 echo "Cleanup completed!"
